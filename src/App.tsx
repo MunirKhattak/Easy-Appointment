@@ -234,6 +234,7 @@ export default function App() {
   }, [step]);
 
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   
   // Load specialists from localStorage or use mock data
   useEffect(() => {
@@ -861,9 +862,76 @@ export default function App() {
             className="w-full max-w-4xl flex flex-col items-center"
           >
             <Header />
-            <div className="w-full text-center mb-12">
-              <h2 className="text-4xl lg:text-5xl font-black text-[#003d7a] mb-4">Apni Bemaari Bataen</h2>
-              <p className="text-slate-500 font-medium">Describe how you're feeling, and our AI will find the best specialist for you.</p>
+            
+            {/* Search Doctor Section */}
+            <div className="w-full max-w-2xl mb-12">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
+                <p className="text-slate-500 font-medium">Search for a specific doctor by name</p>
+              </div>
+              
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                  <Search className="w-6 h-6 text-slate-400 group-focus-within:text-[#0070f3] transition-colors" />
+                </div>
+                <input 
+                  type="text"
+                  value={doctorSearchQuery}
+                  onChange={(e) => setDoctorSearchQuery(e.target.value)}
+                  placeholder="Doctor ka naam yahan likhen..."
+                  className="w-full pl-16 pr-6 py-5 bg-white rounded-3xl border-2 border-slate-100 focus:border-[#0070f3] outline-none shadow-xl shadow-blue-900/5 text-lg font-bold text-slate-800 transition-all"
+                />
+                
+                {/* Search Results */}
+                <AnimatePresence>
+                  {doctorSearchQuery.trim() !== "" && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 w-full mt-2 bg-white rounded-3xl shadow-2xl border border-blue-50 overflow-hidden z-50 max-h-64 overflow-y-auto"
+                    >
+                      {specialists
+                        .filter(s => s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()))
+                        .map(doc => (
+                          <button
+                            key={doc.id}
+                            onClick={() => {
+                              setSelectedSpecialist(doc);
+                              setStep("profile");
+                              setDoctorSearchQuery("");
+                            }}
+                            className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+                              <div className="text-left">
+                                <p className="font-bold text-slate-900">{doc.name}</p>
+                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{doc.type}</p>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-300" />
+                          </button>
+                        ))}
+                      {specialists.filter(s => s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase())).length === 0 && (
+                        <div className="p-6 text-center text-slate-400 font-medium">
+                          Koi doctor nahi mila
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="w-full text-center mb-8">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="h-px bg-slate-200 flex-grow max-w-[100px]"></div>
+                <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">Ya Phir</span>
+                <div className="h-px bg-slate-200 flex-grow max-w-[100px]"></div>
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
+              <p className="text-slate-500 font-medium">Taakeh ham aap k lye mutaaliqa Doctor dhoonden</p>
             </div>
 
             <div className="w-full max-w-2xl bg-white rounded-[40px] p-8 lg:p-12 shadow-2xl shadow-blue-900/5 border border-blue-50 relative overflow-hidden">
