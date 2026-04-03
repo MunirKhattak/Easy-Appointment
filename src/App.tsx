@@ -162,7 +162,7 @@ const MOCK_SPECIALISTS: Specialist[] = [
 ];
 
 // --- AI Service ---
-const GEMINI_API_KEY = (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '') || (import.meta.env.VITE_GEMINI_API_KEY || "");
+const GEMINI_API_KEY = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || (import.meta.env?.VITE_GEMINI_API_KEY || "");
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export default function App() {
@@ -373,20 +373,22 @@ export default function App() {
 
   // Initialize Chat Session
   useEffect(() => {
-    if (!GEMINI_API_KEY) return;
-    
-    const session = ai.chats.create({
-      model: "gemini-3-flash-preview",
-      config: {
-        systemInstruction: `You are a professional medical assistant for the "Karak Easy Appointment" app. 
-        Your goal is to help users understand their health concerns and guide them to the right specialists in Karak, Peshawar, Islamabad, or Rawalpindi.
-        Be empathetic, professional, and clear. 
-        Always remind users that you are an AI and they should consult a real doctor for final diagnosis.
-        Keep responses concise and formatted with markdown for readability.
-        ${activeAppointment ? `IMPORTANT: The user has an active appointment with ${activeAppointment.doctorName} (${activeAppointment.doctorType}) on ${activeAppointment.day} at ${activeAppointment.timing}. If relevant, remind them about it or ask if they have any questions about their upcoming visit.` : ""}`,
-      },
-    });
-    setChatSession(session);
+    try {
+      const session = ai.chats.create({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: `You are a professional medical assistant for the "Karak Easy Appointment" app. 
+          Your goal is to help users understand their health concerns and guide them to the right specialists in Karak, Peshawar, Islamabad, or Rawalpindi.
+          Be empathetic, professional, and clear. 
+          Always remind users that you are an AI and they should consult a real doctor for final diagnosis.
+          Keep responses concise and formatted with markdown for readability.
+          ${activeAppointment ? `IMPORTANT: The user has an active appointment with ${activeAppointment.doctorName} (${activeAppointment.doctorType}) on ${activeAppointment.day} at ${activeAppointment.timing}. If relevant, remind them about it or ask if they have any questions about their upcoming visit.` : ""}`,
+        },
+      });
+      setChatSession(session);
+    } catch (e) {
+      console.error("Failed to create chat session:", e);
+    }
   }, [activeAppointment]);
 
   // AI Reminder in Chat
@@ -411,10 +413,10 @@ export default function App() {
   }, [chatMessages]);
 
   const handleSendMessage = async () => {
-    if (!userInput.trim() || !chatSession) return;
+    if (!userInput.trim()) return;
 
-    if (!GEMINI_API_KEY) {
-      setChatMessages(prev => [...prev, { role: "user", text: userInput }, { role: "model", text: "AI is not configured. Please add your GEMINI_API_KEY to the environment variables." }]);
+    if (!GEMINI_API_KEY || !chatSession) {
+      setChatMessages(prev => [...prev, { role: "user", text: userInput }, { role: "model", text: "AI is not configured correctly. Please check your GEMINI_API_KEY in Cloudflare environment variables." }]);
       setUserInput("");
       return;
     }
