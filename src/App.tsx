@@ -289,6 +289,7 @@ export default function App() {
   const [bookingDay, setBookingDay] = useState("");
   const [bookingStatus, setBookingStatus] = useState<"idle" | "sent" | "confirmed">("idle");
   const [bookingNumber, setBookingNumber] = useState("");
+  const [isBookingFromUrl, setIsBookingFromUrl] = useState(false);
   const [activeAppointment, setActiveAppointment] = useState<ActiveAppointment | null>(() => {
     const saved = localStorage.getItem("karak_active_appointment");
     if (saved) {
@@ -305,6 +306,21 @@ export default function App() {
     return null;
   });
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
+
+  // Handle booking number from URL (WhatsApp link)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bookingFromUrl = params.get("booking");
+    if (bookingFromUrl && activeAppointment && activeAppointment.status === "pending") {
+      setBookingNumber(bookingFromUrl);
+      setIsBookingFromUrl(true);
+      setShowAppointmentDetails(true);
+      
+      // Clear the URL parameter to avoid re-triggering on refresh
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [activeAppointment]);
 
   // Save active appointment to localStorage
   useEffect(() => {
@@ -385,7 +401,8 @@ export default function App() {
 
     if (!selectedSpecialist) return;
 
-    const message = `*New Appointment Request*%0A%0A*Patient:* ${bookingName}%0A*Phone:* ${bookingPhone}%0A*Doctor:* ${selectedSpecialist.name}%0A*Day:* ${bookingDay}%0A*Location:* ${selectedSpecialist.location}%0A%0A_Please reply with a booking number to confirm._`;
+    const appUrl = window.location.origin + window.location.pathname;
+    const message = `*New Appointment Request*%0A%0A*Patient:* ${bookingName}%0A*Phone:* ${bookingPhone}%0A*Doctor:* ${selectedSpecialist.name}%0A*Day:* ${bookingDay}%0A*Location:* ${selectedSpecialist.location}%0A%0A_Please reply with a booking number to confirm._%0A%0A*Assistant Instruction:*%0A_Please send the booking number in this link format to the patient:_%0A${appUrl}?booking=BOOKING_NUMBER`;
     const whatsappUrl = `https://wa.me/${selectedSpecialist.assistantPhone}?text=${message}`;
     
     window.open(whatsappUrl, "_blank");
@@ -1589,10 +1606,14 @@ export default function App() {
                       <input 
                         type="text" 
                         value={bookingNumber}
-                        onChange={(e) => setBookingNumber(e.target.value)}
+                        onChange={(e) => !isBookingFromUrl && setBookingNumber(e.target.value)}
+                        readOnly={isBookingFromUrl}
                         placeholder="e.g. BK-1024"
-                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all"
+                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
                       />
+                      {isBookingFromUrl && (
+                        <p className="text-[10px] text-green-500 font-bold text-center">✓ Automatically loaded from link</p>
+                      )}
                     </div>
                     <button 
                       onClick={() => {
@@ -1714,10 +1735,14 @@ export default function App() {
                       <input 
                         type="text" 
                         value={bookingNumber}
-                        onChange={(e) => setBookingNumber(e.target.value)}
+                        onChange={(e) => !isBookingFromUrl && setBookingNumber(e.target.value)}
+                        readOnly={isBookingFromUrl}
                         placeholder="e.g. BK-1024"
-                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all"
+                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
                       />
+                      {isBookingFromUrl && (
+                        <p className="text-[10px] text-green-500 font-bold text-center">✓ Automatically loaded from link</p>
+                      )}
                     </div>
                     <button 
                       onClick={() => {
