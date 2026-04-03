@@ -935,13 +935,13 @@ export default function App() {
                 <div className="h-0.5 bg-gradient-to-l from-transparent to-slate-200 flex-grow max-w-[150px]"></div>
               </div>
               <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
-              <p className="text-slate-500 font-medium flex items-center justify-center gap-2">
-                <span>Taakeh hamari</span>
-                <span className="relative inline-block">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-2xl tracking-tighter">AI</span>
-                  <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#0070f3] to-[#0056b3] rounded-full opacity-30"></span>
+              <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
+                <span className="whitespace-nowrap">Taakeh hamari</span>
+                <span className="relative inline-flex items-center px-1">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-3xl tracking-tighter">AI</span>
+                  <Sparkles className="absolute -top-3 -right-2 w-5 h-5 text-blue-400 fill-blue-400/30 animate-pulse" />
                 </span>
-                <span>apke lye mutaaliqa Doctor dhoonde</span>
+                <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
               </p>
             </div>
 
