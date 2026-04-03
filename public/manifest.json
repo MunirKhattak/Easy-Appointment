@@ -3,14 +3,16 @@
   "name": "Karak Easy Appointment",
   "icons": [
     {
-      "src": "https://picsum.photos/seed/karak/192/192",
+      "src": "https://cdn-icons-png.flaticon.com/512/2966/2966327.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://picsum.photos/seed/karak/512/512",
+      "src": "https://cdn-icons-png.flaticon.com/512/2966/2966327.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
