@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ArrowLeft, ArrowRight, Bot, Calendar, CheckCircle2, Leaf, Loader2, MapPin, Search, Star, User, Stethoscope, Edit, Trash2, Plus, X, Phone, MessageSquare } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bot, Calendar, CheckCircle2, Leaf, Loader2, MapPin, Search, Star, User, Stethoscope, Edit, Trash2, Plus, X, Phone, MessageSquare, Sparkles, Download } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useRef } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
@@ -372,6 +372,42 @@ export default function App() {
     }
   };
 
+  const [isGeneratingLogos, setIsGeneratingLogos] = useState(false);
+  const [suggestedLogos, setSuggestedLogos] = useState<string[]>([]);
+
+  const generateLogoSuggestions = async () => {
+    setIsGeneratingLogos(true);
+    setSuggestedLogos([]);
+    try {
+      const prompts = [
+        "A modern medical logo with a stylized letter 'K' and a medical cross, professional blue and white, minimalist icon style.",
+        "A calendar icon with a stethoscope wrapped around it, representing easy medical appointments, clean flat design.",
+        "A medical shield icon with a plus sign inside, representing trust and healthcare, professional blue theme.",
+        "A minimalist heartbeat pulse line forming the shape of a letter 'K', modern healthcare branding."
+      ];
+
+      const generated: string[] = [];
+      for (const prompt of prompts) {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: { parts: [{ text: prompt }] },
+          config: { imageConfig: { aspectRatio: "1:1" } }
+        });
+        
+        for (const part of response.candidates?.[0]?.content?.parts || []) {
+          if (part.inlineData) {
+            generated.push(`data:image/png;base64,${part.inlineData.data}`);
+          }
+        }
+      }
+      setSuggestedLogos(generated);
+    } catch (error) {
+      console.error("Logo generation error:", error);
+    } finally {
+      setIsGeneratingLogos(false);
+    }
+  };
+
   // Initialize Chat Session
   useEffect(() => {
     try {
@@ -725,6 +761,51 @@ export default function App() {
                 <span className="text-2xl font-bold flex-grow text-center pl-8">Book Your Appointment</span>
                 <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
               </button>
+
+              {/* Logo Suggestions Section */}
+              <div className="w-full max-w-md lg:max-w-3xl mt-16 p-8 bg-white rounded-[40px] shadow-xl shadow-blue-900/5 border border-blue-50 text-left">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-[#003d7a]">App Logo Suggestions</h3>
+                    <p className="text-slate-500 font-medium">Generate professional logos for your Android app</p>
+                  </div>
+                  <button 
+                    onClick={generateLogoSuggestions}
+                    disabled={isGeneratingLogos}
+                    className="p-4 bg-[#0056b3] text-white rounded-2xl hover:bg-[#004494] transition-all disabled:opacity-50 shadow-lg shadow-blue-200"
+                  >
+                    {isGeneratingLogos ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
+                  </button>
+                </div>
+
+                {suggestedLogos.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                    {suggestedLogos.map((logo, idx) => (
+                      <div key={idx} className="relative group">
+                        <img 
+                          src={logo} 
+                          alt={`Logo Suggestion ${idx + 1}`} 
+                          className="w-full aspect-square rounded-2xl border-2 border-slate-100 shadow-sm group-hover:shadow-md transition-all"
+                          referrerPolicy="no-referrer"
+                        />
+                        <a 
+                          href={logo} 
+                          download={`karak-logo-${idx + 1}.png`}
+                          className="absolute bottom-2 right-2 p-2 bg-white/90 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Download className="w-4 h-4 text-[#0056b3]" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {!isGeneratingLogos && suggestedLogos.length === 0 && (
+                  <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-3xl">
+                    <p className="text-slate-400 font-bold text-sm">Click the sparkle button to generate AI logo ideas</p>
+                  </div>
+                )}
+              </div>
             </main>
           </motion.div>
         )}
