@@ -907,7 +907,11 @@ export default function App() {
                               <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
                               <div className="text-left">
                                 <p className="font-bold text-slate-900">{doc.name}</p>
-                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{doc.type}</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                  <span>{doc.type}</span>
+                                  <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                  <span className="text-[#0056b3]">{doc.city}</span>
+                                </p>
                               </div>
                             </div>
                             <ArrowRight className="w-4 h-4 text-slate-300" />
@@ -924,14 +928,21 @@ export default function App() {
               </div>
             </div>
 
-            <div className="w-full text-center mb-8">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="h-px bg-slate-200 flex-grow max-w-[100px]"></div>
-                <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">Ya Phir</span>
-                <div className="h-px bg-slate-200 flex-grow max-w-[100px]"></div>
+            <div className="w-full text-center mb-10">
+              <div className="flex items-center justify-center gap-6 mb-8">
+                <div className="h-0.5 bg-gradient-to-r from-transparent to-slate-200 flex-grow max-w-[150px]"></div>
+                <span className="text-slate-600 font-black uppercase tracking-[0.4em] text-lg bg-white px-6 py-2 rounded-2xl border border-slate-100 shadow-sm">Ya Phir</span>
+                <div className="h-0.5 bg-gradient-to-l from-transparent to-slate-200 flex-grow max-w-[150px]"></div>
               </div>
               <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
-              <p className="text-slate-500 font-medium">Taakeh ham aap k lye mutaaliqa Doctor dhoonden</p>
+              <p className="text-slate-500 font-medium flex items-center justify-center gap-2">
+                <span>Taakeh hamari</span>
+                <span className="relative inline-block">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-2xl tracking-tighter">AI</span>
+                  <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#0070f3] to-[#0056b3] rounded-full opacity-30"></span>
+                </span>
+                <span>apke lye mutaaliqa Doctor dhoonde</span>
+              </p>
             </div>
 
             <div className="w-full max-w-2xl bg-white rounded-[40px] p-8 lg:p-12 shadow-2xl shadow-blue-900/5 border border-blue-50 relative overflow-hidden">
