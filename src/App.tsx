@@ -227,6 +227,12 @@ export default function App() {
   };
 
   const [step, setStep] = useState<Step>("home");
+
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   
   // Load specialists from localStorage or use mock data
