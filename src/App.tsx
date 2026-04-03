@@ -162,7 +162,8 @@ const MOCK_SPECIALISTS: Specialist[] = [
 ];
 
 // --- AI Service ---
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const GEMINI_API_KEY = (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '') || (import.meta.env.VITE_GEMINI_API_KEY || "");
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export default function App() {
   const [step, setStep] = useState<Step>("home");
@@ -372,8 +373,10 @@ export default function App() {
 
   // Initialize Chat Session
   useEffect(() => {
+    if (!GEMINI_API_KEY) return;
+    
     const session = ai.chats.create({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3-flash-preview",
       config: {
         systemInstruction: `You are a professional medical assistant for the "Karak Easy Appointment" app. 
         Your goal is to help users understand their health concerns and guide them to the right specialists in Karak, Peshawar, Islamabad, or Rawalpindi.
@@ -410,6 +413,12 @@ export default function App() {
   const handleSendMessage = async () => {
     if (!userInput.trim() || !chatSession) return;
 
+    if (!GEMINI_API_KEY) {
+      setChatMessages(prev => [...prev, { role: "user", text: userInput }, { role: "model", text: "AI is not configured. Please add your GEMINI_API_KEY to the environment variables." }]);
+      setUserInput("");
+      return;
+    }
+
     if (step === "symptoms") {
       await handleSymptomHelp(userInput);
       setUserInput("");
@@ -425,9 +434,10 @@ export default function App() {
       const result = await chatSession.sendMessage({ message: userInput });
       const modelMsg: Message = { role: "model", text: result.text || "I'm sorry, I couldn't process that." };
       setChatMessages(prev => [...prev, modelMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
-      setChatMessages(prev => [...prev, { role: "model", text: "Error connecting to AI. Please try again." }]);
+      const errorMsg = error?.message || "Error connecting to AI. Please check your API key and Cloudflare settings.";
+      setChatMessages(prev => [...prev, { role: "model", text: errorMsg }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -435,6 +445,12 @@ export default function App() {
 
   const handleSymptomHelp = async (input: string) => {
     if (!input.trim()) return;
+
+    if (!GEMINI_API_KEY) {
+      setChatMessages(prev => [...prev, { role: "user", text: input }, { role: "model", text: "AI is not configured. Please add your GEMINI_API_KEY to the environment variables." }]);
+      return;
+    }
+
     setIsChatLoading(true);
     
     // Add user message to chat
