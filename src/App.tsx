@@ -937,9 +937,8 @@ export default function App() {
               <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
               <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
                 <span className="whitespace-nowrap">Taakeh hamari</span>
-                <span className="relative inline-flex items-center px-1">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-3xl tracking-tighter">AI</span>
-                  <Sparkles className="absolute -top-3 -right-2 w-5 h-5 text-blue-400 fill-blue-400/30 animate-pulse" />
+                <span className="relative inline-flex items-center">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-xl tracking-tight">AI</span>
                 </span>
                 <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
               </p>
