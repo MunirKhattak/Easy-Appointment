@@ -162,7 +162,8 @@ const MOCK_SPECIALISTS: Specialist[] = [
 ];
 
 // --- AI Service ---
-const GEMINI_API_KEY = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || (import.meta.env?.VITE_GEMINI_API_KEY || "");
+const rawKey = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || (import.meta.env?.VITE_GEMINI_API_KEY || "");
+const GEMINI_API_KEY = rawKey.replace(/['"]+/g, '').trim();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export default function App() {
@@ -438,7 +439,14 @@ export default function App() {
       setChatMessages(prev => [...prev, modelMsg]);
     } catch (error: any) {
       console.error("Chat error:", error);
-      const errorMsg = error?.message || "Error connecting to AI. Please check your API key and Cloudflare settings.";
+      let errorMsg = error?.message || "Error connecting to AI.";
+      
+      // Add debug info if it's an API key error
+      if (errorMsg.includes("API key not valid")) {
+        const keyStart = GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 4) : "empty";
+        errorMsg = `API Key Invalid. Please re-copy your key from AI Studio. (Key starts with: ${keyStart}...)`;
+      }
+      
       setChatMessages(prev => [...prev, { role: "model", text: errorMsg }]);
     } finally {
       setIsChatLoading(false);
