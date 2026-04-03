@@ -167,6 +167,65 @@ const GEMINI_API_KEY = rawKey.replace(/['"]+/g, '').trim();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export default function App() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
+  const [isIOS, setIsIOS] = useState(false);
+
+  // Handle PWA Install Prompt
+  useEffect(() => {
+    console.log("PWA: Initializing install prompt listener...");
+    
+    const checkIOS = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    };
+    setIsIOS(checkIOS());
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      console.log("PWA: beforeinstallprompt event fired!");
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      // Update UI notify the user they can install the PWA
+      setShowInstallButton(true);
+    };
+
+    const handleAppInstalled = () => {
+      console.log("PWA: App was installed!");
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone) {
+      console.log("PWA: App is already running in standalone mode.");
+      setShowInstallButton(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    // Optionally, send analytics event with outcome of user choice
+    console.log(`User response to the install prompt: ${outcome}`);
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
+    setShowInstallButton(false);
+  };
+
   const [step, setStep] = useState<Step>("home");
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   
@@ -697,6 +756,41 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fbff] flex flex-col items-center px-6 py-8 font-sans text-[#003d7a]">
+      {/* Floating Install Button */}
+      {showInstallButton && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white rounded-2xl shadow-2xl border border-blue-100 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-50 p-2 rounded-xl">
+                <img 
+                  src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" 
+                  alt="App Icon" 
+                  className="w-8 h-8 object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Install KarakEasy</p>
+                <p className="text-xs text-slate-500">Fast access from home screen</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowInstallButton(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={handleInstallClick}
+                className="bg-[#0056b3] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-[#004494] transition-all active:scale-95"
+              >
+                Install
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         {step === "home" && (
           <motion.div
@@ -725,11 +819,29 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setStep("symptoms")}
-                className="w-full max-w-md lg:max-w-lg bg-[#0056b3] hover:bg-[#004494] text-white py-7 px-10 rounded-[24px] flex items-center justify-between group transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-blue-400/30"
+                className="w-full max-w-md lg:max-w-lg bg-[#0056b3] hover:bg-[#004494] text-white py-7 px-10 rounded-[24px] flex items-center justify-between group transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-blue-400/30 mb-6"
               >
                 <span className="text-2xl font-bold flex-grow text-center pl-8">Book Your Appointment</span>
                 <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
               </button>
+
+              {showInstallButton && (
+                <button 
+                  onClick={handleInstallClick}
+                  className="flex items-center gap-2 text-[#0056b3] font-bold hover:opacity-80 transition-opacity"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Install App for Faster Access</span>
+                </button>
+              )}
+
+              {isIOS && !window.matchMedia('(display-mode: standalone)').matches && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-2xl border border-blue-100 max-w-sm">
+                  <p className="text-sm text-blue-800 font-medium">
+                    iPhone users: Tap <span className="font-bold">Share</span> then <span className="font-bold">Add to Home Screen</span> to install.
+                  </p>
+                </div>
+              )}
             </main>
           </motion.div>
         )}
