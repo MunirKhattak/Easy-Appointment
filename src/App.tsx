@@ -476,6 +476,8 @@ export default function App() {
   // --- Admin State ---
   const [editingDoc, setEditingDoc] = useState<Specialist | null>(null);
   const [isAddingDoc, setIsAddingDoc] = useState(false);
+  const [isSavingDoc, setIsSavingDoc] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [adminForm, setAdminForm] = useState<Partial<Specialist>>({});
   const [adminClickCount, setAdminClickCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -687,11 +689,13 @@ export default function App() {
   };
 
   const handleSaveDoc = async () => {
+    if (isSavingDoc) return;
     if (!adminForm.name || !adminForm.type || !adminForm.city || !adminForm.location || !adminForm.assistantPhone) {
       alert("Please fill in all required fields (Name, Type, City, Location, Assistant Phone).");
       return;
     }
 
+    setIsSavingDoc(true);
     try {
       if (editingDoc) {
         const updatedDoc = { ...editingDoc, ...adminForm };
@@ -700,11 +704,11 @@ export default function App() {
         const id = Date.now().toString();
         const newDoc: Specialist = {
           id,
-          name: adminForm.name,
-          type: adminForm.type,
-          city: adminForm.city as any,
-          location: adminForm.location,
-          assistantPhone: adminForm.assistantPhone,
+          name: adminForm.name || "",
+          type: adminForm.type || "",
+          city: (adminForm.city as any) || "Karak",
+          location: adminForm.location || "",
+          assistantPhone: adminForm.assistantPhone || "",
           experience: adminForm.experience || "Not Specified",
           rating: adminForm.rating || 4.5,
           bio: adminForm.bio || "",
@@ -719,6 +723,8 @@ export default function App() {
       setAdminForm({});
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, "specialists");
+    } finally {
+      setIsSavingDoc(false);
     }
   };
 
@@ -739,10 +745,13 @@ export default function App() {
 
   const handleDeleteDoc = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this specialist?")) {
+      setDeletingId(id);
       try {
         await deleteDoc(doc(db, "specialists", id));
       } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, "specialists");
+      } finally {
+        setDeletingId(null);
       }
     }
   };
@@ -1615,9 +1624,10 @@ export default function App() {
                     </button>
                     <button 
                       onClick={() => handleDeleteDoc(doc.id)}
-                      className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all"
+                      disabled={deletingId === doc.id}
+                      className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      {deletingId === doc.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
@@ -1821,9 +1831,11 @@ export default function App() {
                     </button>
                     <button 
                       onClick={handleSaveDoc}
-                      className="flex-1 py-4 bg-[#0056b3] text-white rounded-xl font-bold hover:bg-[#004494] transition-all shadow-lg shadow-blue-200"
+                      disabled={isSavingDoc}
+                      className="flex-1 py-4 bg-[#0056b3] text-white rounded-xl font-bold hover:bg-[#004494] transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      Save Specialist
+                      {isSavingDoc && <Loader2 className="w-5 h-5 animate-spin" />}
+                      {isSavingDoc ? "Saving..." : "Save Specialist"}
                     </button>
                   </div>
                 </motion.div>
