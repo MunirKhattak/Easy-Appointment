@@ -1314,7 +1314,7 @@ export default function App() {
                             <ArrowRight className="w-4 h-4 text-slate-300" />
                           </button>
                         ))
-                      }
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
