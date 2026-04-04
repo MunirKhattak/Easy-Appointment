@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ArrowLeft, ArrowRight, Bot, Calendar, CheckCircle2, Leaf, Loader2, MapPin, Search, Star, User, Stethoscope, Edit, Trash2, Plus, X, Phone, MessageSquare, Sparkles, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bot, Calendar, CheckCircle2, Leaf, Loader2, MapPin, Search, Star, User, Stethoscope, Edit, Trash2, Plus, X, Phone, MessageSquare, Sparkles, Download, Camera, Upload } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import React, { useState, useEffect, useRef } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
