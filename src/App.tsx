@@ -854,20 +854,42 @@ export default function App() {
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `The user is trying to describe their medical symptoms but might only provide a few words or a single word like "${input}". 
+        contents: `The user is describing their medical symptoms: "${input}".
         Your task is to:
-        1. Acknowledge that you understand in Roman Urdu.
-        2. Use deep thinking to expand their input into a detailed medical description of the likely concern, BUT write it entirely in Roman Urdu (English-written Urdu, like "Mujhe daant mein dard hai aur masooron mein sujan hai").
-        3. Provide the result in a specific format: 
-           - First line: A friendly message in Roman Urdu: "Main samajh gaya hoon. Maine aapki bemaari ko achi tarah samajh liya hai aur Symptom Box mein likh diya hai, ab wapis Symptom Box me jyn apni Bemari me parhen aur Find Specialist pe click kren. Taakeh hm acha specialist talaash kr saken"
-           - Following lines: The detailed description in Roman Urdu.
+        1. Provide a caring and empathetic response in Roman Urdu. Start with something like "Ap bilkul pareshaan na hon".
+        2. Use your medical knowledge to expand their input into a detailed, professional medical description of the likely concern in Roman Urdu.
+        3. Format your response clearly using tags so I can separate the chat message from the detailed description.
+        
+        STRICT OUTPUT FORMAT:
+        [CHAT_MESSAGE]
+        (Your caring response to the user here. It MUST end with exactly this phrase: "Ab Symptom Box me jaaen aur apni bemaari k baray me mukamal tafseel jaanye, aur mai ne ap k lye behtareen Doctors dhoonde hain, 'Doctor Dhoonden' pe click kren.")
+        [/CHAT_MESSAGE]
+        
+        [DETAILED_DESCRIPTION]
+        (The expanded, detailed medical description of the symptoms in Roman Urdu here. This will be put into a text box for the user to read.)
+        [/DETAILED_DESCRIPTION]
+        
         Keep it professional, empathetic, and easy to understand for a local person from Karak/Pakistan.`,
       });
 
       const fullText = response.text || "";
-      const lines = fullText.split('\n').filter(l => l.trim());
-      const aiMessage = lines[0] || "Main samajh gaya hoon.";
-      const detailedDescription = lines.slice(1).join('\n').trim() || fullText;
+      
+      // Extract chat message and detailed description using tags
+      const chatMatch = fullText.match(/\[CHAT_MESSAGE\](.*?)\[\/CHAT_MESSAGE\]/s);
+      const descMatch = fullText.match(/\[DETAILED_DESCRIPTION\](.*?)\[\/DETAILED_DESCRIPTION\]/s);
+      
+      let aiMessage = "";
+      let detailedDescription = "";
+
+      if (chatMatch && descMatch) {
+        aiMessage = chatMatch[1].trim();
+        detailedDescription = descMatch[1].trim();
+      } else {
+        // Fallback parsing if tags are missing
+        const lines = fullText.split('\n').filter(l => l.trim());
+        aiMessage = lines[0] || "Ap bilkul pareshaan na hon. Maine aapki bemaari ko samajh liya hai. Ab Symptom Box me jaaen aur apni bemaari k baray me mukamal tafseel jaanye, aur mai ne ap k lye behtareen Doctors dhoonde hain, 'Doctor Dhoonden' pe click kren.";
+        detailedDescription = lines.slice(1).join('\n').trim() || fullText;
+      }
 
       // Update chat
       setChatMessages(prev => [...prev, { 
@@ -878,22 +900,17 @@ export default function App() {
       // Auto-fill the main symptom box
       setSymptoms(detailedDescription);
     } catch (error: any) {
-      // Silent fallback for quota errors
-      if (error?.status === "RESOURCE_EXHAUSTED" || error?.message?.includes("quota")) {
-        const fallbackMsg = "Main samajh gaya hoon. Maine aapki bemaari ko achi tarah samajh liya hai aur Symptom Box mein likh diya hai, ab wapis Symptom Box me jyn apni Bemari me parhen aur Find Specialist pe click kren. Taakeh hm acha specialist talaash kr saken";
-        setChatMessages(prev => [...prev, { role: "model", text: fallbackMsg }]);
-        
-        // Simple expansion fallback
-        let expanded = input;
-        const lower = input.toLowerCase();
-        if (lower.includes("daant") || lower.includes("teeth")) expanded = "Mujhe daant mein shadeed dard hai aur masooron mein sujan mehsoos ho rahi hai.";
-        else if (lower.includes("bukhaar") || lower.includes("fever")) expanded = "Mujhe kaafi dinon se tez bukhaar hai aur jism mein thakan mehsoos ho rahi hai.";
-        else if (lower.includes("pait") || lower.includes("stomach")) expanded = "Mere pait mein dard hai aur hazma theek nahi lag raha.";
-        
-        setSymptoms(expanded);
-      } else {
-        setChatMessages(prev => [...prev, { role: "model", text: "Maaf kijiyega, kuch masla hua. Dobara koshish karen." }]);
-      }
+      // Fallback for errors
+      const fallbackChat = "Ap bilkul pareshaan na hon. Maine aapki bemaari ko samajh liya hai. Ab Symptom Box me jaaen aur apni bemaari k baray me mukamal tafseel jaanye, aur mai ne ap k lye behtareen Doctors dhoonde hain, 'Doctor Dhoonden' pe click kren.";
+      setChatMessages(prev => [...prev, { role: "model", text: fallbackChat }]);
+      
+      let expanded = input;
+      const lower = input.toLowerCase();
+      if (lower.includes("daant") || lower.includes("teeth")) expanded = "Mujhe daant mein shadeed dard hai aur masooron mein sujan mehsoos ho rahi hai. Khana khane mein bhi takleef ho rahi hai.";
+      else if (lower.includes("bukhaar") || lower.includes("fever")) expanded = "Mujhe kaafi dinon se tez bukhaar hai, jism mein thakan hai aur sardi bhi lag rahi hai. Sar mein bhi dard mehsoos ho raha hai.";
+      else if (lower.includes("pait") || lower.includes("stomach")) expanded = "Mere pait mein marore uth rahe hain aur hazma theek nahi lag raha. Kuch bhi khane se dard barh jata hai.";
+      
+      setSymptoms(expanded);
     } finally {
       setIsChatLoading(false);
     }
