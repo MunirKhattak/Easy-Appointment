@@ -1230,22 +1230,23 @@ export default function App() {
             <Header />
             
             {/* Search Doctor Section */}
-            <div className="w-full max-w-2xl mb-10 bg-white rounded-[40px] p-8 lg:p-10 shadow-2xl shadow-blue-900/5 border border-blue-50 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 to-[#0056b3]"></div>
+            <div className="w-full max-w-2xl mb-12 bg-blue-50/40 rounded-[40px] p-8 lg:p-10 shadow-xl shadow-blue-900/5 border-2 border-blue-100 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-400"></div>
               <div className="text-center mb-8">
-                <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
+                <h2 className="text-2xl lg:text-3xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
+                <div className="w-20 h-1 bg-blue-200 mx-auto rounded-full"></div>
               </div>
               
               <div className="relative group">
                 <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                  <Search className="w-6 h-6 text-slate-400 group-focus-within:text-[#0070f3] transition-colors" />
+                  <Search className="w-6 h-6 text-blue-400 group-focus-within:text-[#0070f3] transition-colors" />
                 </div>
                 <input 
                   type="text"
                   value={doctorSearchQuery}
                   onChange={(e) => setDoctorSearchQuery(e.target.value)}
                   placeholder="Doctor ka naam yahan likhen..."
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-3xl border-2 border-transparent focus:border-[#0070f3] focus:bg-white outline-none shadow-sm text-lg font-bold text-slate-800 transition-all"
+                  className="w-full pl-16 pr-6 py-5 bg-white rounded-3xl border-2 border-blue-50 focus:border-[#0070f3] outline-none shadow-sm text-lg font-bold text-slate-800 transition-all"
                 />
                 
                 {/* Search Results */}
@@ -1255,7 +1256,7 @@ export default function App() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 w-full mt-2 bg-white rounded-3xl shadow-2xl border border-blue-50 overflow-hidden z-50 max-h-64 overflow-y-auto"
+                      className="absolute top-full left-0 w-full mt-2 bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden z-50 max-h-64 overflow-y-auto"
                     >
                       {specialists
                         .filter(s => s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()))
@@ -1294,28 +1295,31 @@ export default function App() {
               </div>
             </div>
 
-            <div className="w-full text-center mb-10">
-              <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="h-0.5 bg-gradient-to-r from-transparent to-slate-200 flex-grow max-w-[100px]"></div>
-                <span className="text-slate-400 font-black uppercase tracking-[0.4em] text-sm bg-white px-6 py-2 rounded-2xl border border-slate-100 shadow-sm">Ya Phir</span>
-                <div className="h-0.5 bg-gradient-to-l from-transparent to-slate-200 flex-grow max-w-[100px]"></div>
+            <div className="w-full text-center mb-12">
+              <div className="flex items-center justify-center gap-6">
+                <div className="h-px bg-slate-200 flex-grow max-w-[80px]"></div>
+                <span className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs bg-slate-50 px-4 py-1.5 rounded-full border border-slate-200">Ya Phir</span>
+                <div className="h-px bg-slate-200 flex-grow max-w-[80px]"></div>
               </div>
-              <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
-              <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
-                <span className="whitespace-nowrap">Taakeh hamari</span>
-                <span className="relative inline-flex items-center">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070f3] to-[#0056b3] font-black text-xl tracking-tight">AI</span>
-                </span>
-                <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
-              </p>
             </div>
 
-            <div className="w-full max-w-2xl bg-white rounded-[40px] p-8 lg:p-12 shadow-2xl shadow-blue-900/5 border border-blue-50 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0070f3] to-[#0056b3]"></div>
+            <div className="w-full max-w-2xl bg-emerald-50/40 rounded-[40px] p-8 lg:p-12 shadow-xl shadow-emerald-900/5 border-2 border-emerald-100 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-400"></div>
               
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-50 p-2 rounded-xl">
-                  <Stethoscope className="w-6 h-6 text-[#0056b3]" />
+              <div className="text-center mb-8">
+                <h2 className="text-2xl lg:text-3xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
+                <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
+                  <span className="whitespace-nowrap">Taakeh hamari</span>
+                  <span className="relative inline-flex items-center">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 font-black text-xl tracking-tight">AI</span>
+                  </span>
+                  <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="bg-emerald-100 p-2 rounded-xl">
+                  <Stethoscope className="w-6 h-6 text-emerald-600" />
                 </div>
               </div>
 
@@ -1323,14 +1327,14 @@ export default function App() {
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 placeholder="E.g., Mujhe kal se sar mein dard hai aur bukhar bhi..."
-                className="w-full h-48 p-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] focus:bg-white transition-all outline-none text-lg font-medium text-slate-800 resize-none"
+                className="w-full h-48 p-6 rounded-2xl bg-white border-2 border-emerald-50 focus:border-emerald-400 transition-all outline-none text-lg font-medium text-slate-800 resize-none shadow-sm"
               />
 
               <div className="mt-8 flex flex-col gap-4">
                 <button 
                   onClick={analyzeSymptoms}
                   disabled={isAnalyzing || !symptoms.trim()}
-                  className="w-full bg-[#0056b3] hover:bg-[#004494] disabled:bg-slate-300 text-white py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-200"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-200"
                 >
                   {isAnalyzing ? (
                     <>
@@ -1345,18 +1349,18 @@ export default function App() {
                   )}
                 </button>
                 
-                <div className="flex items-center gap-4 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                <div className="flex items-center gap-4 bg-white/80 p-4 rounded-2xl border border-emerald-100">
                   <button 
                     onClick={() => {
                       setChatMessages([]);
                       setIsChatOpen(true);
                     }}
-                    className="bg-[#0056b3] hover:bg-[#004494] text-white p-4 rounded-xl transition-all shadow-md"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl transition-all shadow-md"
                     title="AI Help"
                   >
                     <Bot className="w-6 h-6" />
                   </button>
-                  <p className="text-sm font-bold text-[#0056b3] leading-tight">
+                  <p className="text-sm font-bold text-emerald-700 leading-tight">
                     Mai AI Bot hu - mai apki bemari achi trha bayan krne me apki madad kr skta hu
                   </p>
                 </div>
