@@ -1056,40 +1056,30 @@ export default function App() {
         {user ? (
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
-              <div className="flex items-center gap-2">
-                {userRole === "admin" && (
-                  <span className="px-1.5 py-0.5 bg-blue-100 text-[#0056b3] text-[8px] font-black uppercase rounded-md tracking-tighter">Admin</span>
-                )}
-                <span className="hidden xs:block text-xs font-bold text-[#003d7a]">{user.displayName?.split(' ')[0] || "User"}</span>
-              </div>
-              <div className="flex gap-2">
-                {userRole === "admin" && (
-                  <button 
-                    onClick={() => setStep("admin")}
-                    className="text-[10px] font-bold text-[#0056b3] hover:text-[#004494] uppercase tracking-wider underline decoration-2 underline-offset-2"
-                  >
-                    Panel
-                  </button>
-                )}
-                <button 
-                  onClick={handleSignOut}
-                  className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
-                >
-                  Exit
-                </button>
-              </div>
+              <span className="hidden xs:block text-xs font-bold text-[#003d7a]">{user.displayName?.split(' ')[0] || "User"}</span>
+              <button 
+                onClick={handleSignOut}
+                className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
+              >
+                Exit
+              </button>
             </div>
-            <button 
-              onClick={() => userRole === "admin" && setStep("admin")}
-              className="w-10 h-10 rounded-full border-2 border-blue-100 p-0.5 hover:border-blue-300 transition-all overflow-hidden"
-            >
-              <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || "User"}&background=0056b3&color=fff`} 
-                alt="User" 
-                className="w-full h-full rounded-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </button>
+            <div className="flex flex-col items-center gap-1">
+              <button 
+                onClick={() => userRole === "admin" && setStep("admin")}
+                className="w-10 h-10 rounded-full border-2 border-blue-100 p-0.5 hover:border-blue-300 transition-all overflow-hidden"
+              >
+                <img 
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || "User"}&background=0056b3&color=fff`} 
+                  alt="User" 
+                  className="w-full h-full rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
+              {userRole === "admin" && (
+                <span className="px-1.5 py-0.5 bg-blue-100 text-[#0056b3] text-[7px] font-black uppercase rounded-md tracking-tighter leading-none">Admin</span>
+              )}
+            </div>
           </div>
         ) : (
           <button 
