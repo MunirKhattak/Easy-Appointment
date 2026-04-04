@@ -361,7 +361,9 @@ export default function App() {
   
   // Auth Listener
   useEffect(() => {
+    console.log("Setting up onAuthStateChanged listener");
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      console.log("onAuthStateChanged triggered:", currentUser?.email || "No user");
       setUser(currentUser);
       if (currentUser) {
         // Check if it's the admin email
@@ -478,6 +480,7 @@ export default function App() {
   const [adminClickCount, setAdminClickCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   // --- Booking State ---
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -591,12 +594,40 @@ export default function App() {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log("handleGoogleSignIn called");
+    if (!auth) {
+      console.error("Auth is not initialized");
+      alert("Error: Auth is not initialized. Please refresh the page.");
+      return;
+    }
+    if (isSigningIn) {
+      console.log("Already signing in, ignoring click");
+      return;
+    }
+    
+    setIsSigningIn(true);
     const provider = new GoogleAuthProvider();
+    // Force select account to avoid silent failures
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
     try {
-      await signInWithPopup(auth, provider);
+      console.log("Attempting signInWithPopup...");
+      const result = await signInWithPopup(auth, provider);
+      console.log("Sign in successful:", result.user.email);
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
-      alert("Sign in failed: " + (error.message || "Unknown error"));
+      
+      // If popup is blocked, we can't really use redirect easily in an iframe, 
+      // but we can give a better instruction.
+      if (error.code === 'auth/popup-blocked') {
+        alert("Sign in popup was blocked by your browser. Please allow popups for this site and try again.");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // Ignore user cancellation
+      } else {
+        alert("Sign in failed: " + (error.message || "Unknown error") + "\nCode: " + (error.code || "No code"));
+      }
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -1063,10 +1094,17 @@ export default function App() {
         ) : (
           <button 
             onClick={handleGoogleSignIn}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all group"
+            disabled={isSigningIn}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <User className="w-4 h-4 text-[#0056b3] group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-[#003d7a]">Sign In</span>
+            {isSigningIn ? (
+              <Loader2 className="w-4 h-4 text-[#0056b3] animate-spin" />
+            ) : (
+              <User className="w-4 h-4 text-[#0056b3] group-hover:scale-110 transition-transform" />
+            )}
+            <span className="text-sm font-bold text-[#003d7a]">
+              {isSigningIn ? "Signing In..." : "Sign In"}
+            </span>
           </button>
         )}
       </div>
