@@ -481,6 +481,7 @@ export default function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Booking State ---
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -718,6 +719,21 @@ export default function App() {
       setAdminForm({});
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, "specialists");
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit for base64
+        alert("Image size too large. Please select an image under 1MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAdminForm(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -1624,6 +1640,59 @@ export default function App() {
                     </button>
                   </div>
                   <div className="p-8 overflow-y-auto space-y-6">
+                    <div className="flex flex-col items-center gap-4 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                      <div className="relative group">
+                        <div className="w-24 h-24 rounded-2xl overflow-hidden bg-white shadow-inner border border-slate-100">
+                          {adminForm.image ? (
+                            <img src={adminForm.image} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                              <Plus className="w-8 h-8" />
+                            </div>
+                          )}
+                        </div>
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl"
+                        >
+                          <Camera className="w-6 h-6 text-white" />
+                        </button>
+                      </div>
+                      
+                      <div className="w-full space-y-3 text-center">
+                        <input 
+                          type="file" 
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-6 py-2 bg-white border-2 border-blue-100 text-[#0056b3] rounded-xl font-bold text-sm hover:bg-blue-50 transition-all flex items-center gap-2 mx-auto"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload from Gallery
+                        </button>
+                        <div className="flex items-center gap-2">
+                          <div className="h-px flex-1 bg-slate-200"></div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">OR</span>
+                          <div className="h-px flex-1 bg-slate-200"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase block text-left">Image URL (Optional)</label>
+                          <input 
+                            type="text" 
+                            value={adminForm.image || ""} 
+                            onChange={e => setAdminForm(prev => ({ ...prev, image: e.target.value }))}
+                            className="w-full p-3 rounded-xl bg-white border border-slate-200 focus:border-[#0070f3] outline-none font-bold text-xs"
+                            placeholder="Paste image link here..."
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-medium italic">Tip: Use a clear square photo under 1MB.</p>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-500 uppercase">Full Name</label>
