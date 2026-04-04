@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "Specialist": {
+      "title": "Specialist",
+      "description": "A medical specialist available for booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "experience": { "type": "string" },
+        "rating": { "type": "number" },
+        "image": { "type": "string" },
+        "bio": { "type": "string" },
+        "city": { "type": "string", "enum": ["Karak", "Peshawar", "Islamabad", "Rawalpindi"] },
+        "location": { "type": "string" },
+        "availability": { "type": "array", "items": { "type": "string" } },
+        "timing": { "type": "string" },
+        "assistantPhone": { "type": "string" },
+        "aiSummary": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "city", "location", "assistantPhone"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "An appointment booked by a patient.",
+      "type": "object",
+      "properties": {
+        "doctorName": { "type": "string" },
+        "doctorType": { "type": "string" },
+        "location": { "type": "string" },
+        "day": { "type": "string" },
+        "timing": { "type": "string" },
+        "patientName": { "type": "string" },
+        "patientPhone": { "type": "string" },
+        "bookingNumber": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed"] },
+        "createdAt": { "type": "number" },
+        "uid": { "type": "string" }
+      },
+      "required": ["doctorName", "patientName", "patientPhone", "status", "createdAt", "uid"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/specialists/{specialistId}": {
+      "schema": "Specialist",
+      "description": "Collection of medical specialists."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Collection of patient appointments."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles and roles."
+    }
+  }
+}

@@ -5,8 +5,126 @@
 
 import { ArrowLeft, ArrowRight, Bot, Calendar, CheckCircle2, Leaf, Loader2, MapPin, Search, Star, User, Stethoscope, Edit, Trash2, Plus, X, Phone, MessageSquare, Sparkles, Download } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  getDocs, 
+  onSnapshot, 
+  query, 
+  where, 
+  orderBy, 
+  deleteDoc,
+  getDocFromServer
+} from "firebase/firestore";
+import { 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  onAuthStateChanged, 
+  signOut,
+  User as FirebaseUser
+} from "firebase/auth";
+import { db, auth } from "./firebase";
+
+// --- Error Handling ---
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
+// --- Error Boundary ---
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      setError(event.error);
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (error) {
+    let errorMessage = "An unexpected error occurred.";
+    try {
+      const parsed = JSON.parse(error.message);
+      if (parsed.error) {
+        errorMessage = `Firestore Error: ${parsed.error} (${parsed.operationType} at ${parsed.path})`;
+      }
+    } catch (e) {
+      errorMessage = error.message;
+    }
+
+    return (
+      <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center p-6 text-center">
+        <div className="max-w-md space-y-4">
+          <div className="bg-red-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+            <X className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-black text-[#003d7a]">Oops! Something went wrong</h2>
+          <p className="text-slate-500 font-medium">{errorMessage}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-[#0056b3] text-white rounded-2xl font-bold hover:bg-[#004494] transition-all"
+          >
+            Reload App
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 // --- Types ---
 type Step = "home" | "symptoms" | "locationSelection" | "specialists" | "profile" | "admin";
@@ -228,6 +346,11 @@ export default function App() {
 
   const [step, setStep] = useState<Step>("home");
 
+  // --- Auth & Firebase State ---
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [userRole, setUserRole] = useState<"admin" | "user">("user");
+
   // Scroll to top on step change
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -236,26 +359,87 @@ export default function App() {
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   
-  // Load specialists from localStorage or use mock data
+  // Auth Listener
   useEffect(() => {
-    const saved = localStorage.getItem("karak_specialists");
-    if (saved) {
-      try {
-        setSpecialists(JSON.parse(saved));
-      } catch (e) {
-        setSpecialists(MOCK_SPECIALISTS);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Check user role in Firestore
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role || "user");
+          } else {
+            // Create user profile if it doesn't exist
+            const newUser = {
+              uid: currentUser.uid,
+              email: currentUser.email,
+              role: "user"
+            };
+            await setDoc(doc(db, "users", currentUser.uid), newUser);
+            setUserRole("user");
+          }
+        } catch (error) {
+          console.error("Error checking user role:", error);
+        }
+      } else {
+        setUserRole("user");
       }
-    } else {
-      setSpecialists(MOCK_SPECIALISTS);
-    }
+      setIsAuthReady(true);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // Save to localStorage whenever specialists change
+  // Firestore Listeners
   useEffect(() => {
-    if (specialists.length > 0) {
-      localStorage.setItem("karak_specialists", JSON.stringify(specialists));
+    if (!isAuthReady) return;
+
+    // Listen for specialists
+    const specialistsQuery = query(collection(db, "specialists"), orderBy("name"));
+    const unsubscribeSpecialists = onSnapshot(specialistsQuery, (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Specialist));
+      if (docs.length === 0) {
+        // If Firestore is empty, seed it with mock data (only if admin)
+        // For now, just show mock data locally if Firestore is empty
+        setSpecialists(MOCK_SPECIALISTS);
+      } else {
+        setSpecialists(docs);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, "specialists");
+    });
+
+    // Listen for active appointment if user is logged in
+    let unsubscribeAppointments = () => {};
+    if (user) {
+      const appointmentsQuery = query(
+        collection(db, "appointments"), 
+        where("uid", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+      unsubscribeAppointments = onSnapshot(appointmentsQuery, (snapshot) => {
+        if (!snapshot.empty) {
+          const latest = snapshot.docs[0].data() as ActiveAppointment;
+          // Check expiry (7 days)
+          if (Date.now() - latest.createdAt < 7 * 24 * 60 * 60 * 1000) {
+            setActiveAppointment(latest);
+          } else {
+            setActiveAppointment(null);
+          }
+        } else {
+          setActiveAppointment(null);
+        }
+      }, (error) => {
+        handleFirestoreError(error, OperationType.LIST, "appointments");
+      });
     }
-  }, [specialists]);
+
+    return () => {
+      unsubscribeSpecialists();
+      unsubscribeAppointments();
+    };
+  }, [isAuthReady, user]);
 
   const [symptoms, setSymptoms] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -393,13 +577,38 @@ export default function App() {
     }
   };
 
-  const handleConfirmBooking = () => {
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setStep("home");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
     if (!bookingName.trim() || !bookingPhone.trim() || !bookingDay) {
       alert("Please enter your name, phone number, and select a day.");
       return;
     }
 
     if (!selectedSpecialist) return;
+
+    // Must be logged in to book
+    if (!user) {
+      alert("Please sign in to book an appointment.");
+      handleGoogleSignIn();
+      return;
+    }
 
     const appUrl = window.location.origin + window.location.pathname;
     const message = `*New Appointment Request*%0A%0A*Patient:* ${bookingName}%0A*Phone:* ${bookingPhone}%0A*Doctor:* ${selectedSpecialist.name}%0A*Day:* ${bookingDay}%0A*Location:* ${selectedSpecialist.location}%0A%0A_Please reply with a booking number to confirm._%0A%0A*Assistant Instruction:*%0A_Please send the booking number in this link format to the patient:_%0A${appUrl}?booking=BOOKING_NUMBER`;
@@ -408,8 +617,8 @@ export default function App() {
     window.open(whatsappUrl, "_blank");
     setBookingStatus("sent");
 
-    // Create pending appointment
-    const newAppt: ActiveAppointment = {
+    // Create pending appointment in Firestore
+    const newAppt: ActiveAppointment & { uid: string } = {
       doctorName: selectedSpecialist.name,
       doctorType: selectedSpecialist.type,
       location: selectedSpecialist.location,
@@ -419,39 +628,56 @@ export default function App() {
       patientPhone: bookingPhone,
       bookingNumber: "",
       status: "pending",
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      uid: user.uid
     };
-    setActiveAppointment(newAppt);
+    
+    try {
+      await setDoc(doc(db, "appointments", `${user.uid}_${Date.now()}`), newAppt);
+      setActiveAppointment(newAppt);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, "appointments");
+    }
   };
 
-  const handleSaveDoc = () => {
+  const handleSaveDoc = async () => {
     if (!adminForm.name || !adminForm.type || !adminForm.city) {
       alert("Please fill in all required fields (Name, Type, City).");
       return;
     }
 
-    if (editingDoc) {
-      setSpecialists(prev => prev.map(s => s.id === editingDoc.id ? { ...s, ...adminForm } as Specialist : s));
-    } else {
-      const newDoc: Specialist = {
-        ...adminForm,
-        id: Date.now().toString(),
-        rating: adminForm.rating || 4.5,
-        availability: adminForm.availability || ["Mon", "Wed", "Fri"],
-        timing: adminForm.timing || "09:00 AM - 05:00 PM",
-        assistantPhone: adminForm.assistantPhone || "923001234567",
-        image: adminForm.image || `https://picsum.photos/seed/${Date.now()}/400/400`,
-      } as Specialist;
-      setSpecialists(prev => [...prev, newDoc]);
+    try {
+      if (editingDoc) {
+        const updatedDoc = { ...editingDoc, ...adminForm };
+        await setDoc(doc(db, "specialists", editingDoc.id), updatedDoc);
+      } else {
+        const id = Date.now().toString();
+        const newDoc: Specialist = {
+          ...adminForm,
+          id,
+          rating: adminForm.rating || 4.5,
+          availability: adminForm.availability || ["Mon", "Wed", "Fri"],
+          timing: adminForm.timing || "09:00 AM - 05:00 PM",
+          assistantPhone: adminForm.assistantPhone || "923001234567",
+          image: adminForm.image || `https://picsum.photos/seed/${Date.now()}/400/400`,
+        } as Specialist;
+        await setDoc(doc(db, "specialists", id), newDoc);
+      }
+      setEditingDoc(null);
+      setIsAddingDoc(false);
+      setAdminForm({});
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, "specialists");
     }
-    setEditingDoc(null);
-    setIsAddingDoc(false);
-    setAdminForm({});
   };
 
-  const handleDeleteDoc = (id: string) => {
+  const handleDeleteDoc = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this specialist?")) {
-      setSpecialists(prev => prev.filter(s => s.id !== id));
+      try {
+        await deleteDoc(doc(db, "specialists", id));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, "specialists");
+      }
     }
   };
 
@@ -775,11 +1001,47 @@ export default function App() {
           <h1 className="text-xl font-black tracking-tight text-[#003d7a]">Easy Appointment</h1>
         </button>
       </div>
+
+      <div className="flex items-center gap-2">
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-xs font-bold text-[#003d7a]">{user.displayName || "User"}</span>
+              <button 
+                onClick={handleSignOut}
+                className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
+              >
+                Sign Out
+              </button>
+            </div>
+            <button 
+              onClick={() => userRole === "admin" && setStep("admin")}
+              className="w-10 h-10 rounded-full border-2 border-blue-100 p-0.5 hover:border-blue-300 transition-all overflow-hidden"
+            >
+              <img 
+                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || "User"}&background=0056b3&color=fff`} 
+                alt="User" 
+                className="w-full h-full rounded-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={handleGoogleSignIn}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all group"
+          >
+            <User className="w-4 h-4 text-[#0056b3] group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-[#003d7a]">Sign In</span>
+          </button>
+        )}
+      </div>
     </header>
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fbff] flex flex-col items-center px-6 py-8 font-sans text-[#003d7a]">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-[#f8fbff] flex flex-col items-center px-6 py-8 font-sans text-[#003d7a]">
       {/* Floating Install Button */}
       {showInstallButton && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1616,15 +1878,35 @@ export default function App() {
                       )}
                     </div>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         if (bookingNumber.trim()) {
-                          setBookingStatus("confirmed");
-                          if (activeAppointment) {
-                            setActiveAppointment({
-                              ...activeAppointment,
-                              bookingNumber: bookingNumber,
-                              status: "confirmed"
-                            });
+                          if (!user) return;
+                          
+                          try {
+                            // Find the appointment doc
+                            const q = query(
+                              collection(db, "appointments"), 
+                              where("uid", "==", user.uid),
+                              where("status", "==", "pending"),
+                              orderBy("createdAt", "desc")
+                            );
+                            const snapshot = await getDocs(q);
+                            if (!snapshot.empty) {
+                              const apptDoc = snapshot.docs[0];
+                              await setDoc(apptDoc.ref, { 
+                                bookingNumber: bookingNumber,
+                                status: "confirmed" 
+                              }, { merge: true });
+                              
+                              setBookingStatus("confirmed");
+                              setActiveAppointment({
+                                ...activeAppointment!,
+                                bookingNumber: bookingNumber,
+                                status: "confirmed"
+                              });
+                            }
+                          } catch (error) {
+                            handleFirestoreError(error, OperationType.UPDATE, "appointments");
                           }
                         } else {
                           alert("Please enter the booking number you received.");
@@ -1745,13 +2027,34 @@ export default function App() {
                       )}
                     </div>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         if (bookingNumber.trim()) {
-                          setActiveAppointment({
-                            ...activeAppointment,
-                            bookingNumber: bookingNumber,
-                            status: "confirmed"
-                          });
+                          if (!user) return;
+                          
+                          try {
+                            const q = query(
+                              collection(db, "appointments"), 
+                              where("uid", "==", user.uid),
+                              where("status", "==", "pending"),
+                              orderBy("createdAt", "desc")
+                            );
+                            const snapshot = await getDocs(q);
+                            if (!snapshot.empty) {
+                              const apptDoc = snapshot.docs[0];
+                              await setDoc(apptDoc.ref, { 
+                                bookingNumber: bookingNumber,
+                                status: "confirmed" 
+                              }, { merge: true });
+                              
+                              setActiveAppointment({
+                                ...activeAppointment!,
+                                bookingNumber: bookingNumber,
+                                status: "confirmed"
+                              });
+                            }
+                          } catch (error) {
+                            handleFirestoreError(error, OperationType.UPDATE, "appointments");
+                          }
                         } else {
                           alert("Please enter the booking number you received.");
                         }
@@ -1941,6 +2244,7 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+    </ErrorBoundary>
   );
 }
 

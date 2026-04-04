@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: specialists
+    // Document ID: auto-generated or timestamp
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - type: string (required)
+    //   - city: string (required, enum: Karak, Peshawar, Islamabad, Rawalpindi)
+    //   - location: string (required)
+    //   - assistantPhone: string (required)
+    //   - ... other optional fields
+    //
+    // Collection: appointments
+    // Document ID: {uid}_{timestamp}
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - doctorName: string (required)
+    //   - patientName: string (required)
+    //   - status: string (required, enum: pending, confirmed)
+    //   - createdAt: number (required, immutable)
+    //   - ... other fields
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - email: string (required)
+    //   - role: string (required, enum: admin, user)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (request.auth.token.email == "munirkhattak.pk@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidSpecialist(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.type is string && data.type.size() > 0 && data.type.size() < 100 &&
+             data.city in ['Karak', 'Peshawar', 'Islamabad', 'Rawalpindi'] &&
+             data.location is string && data.location.size() > 0 && data.location.size() < 200 &&
+             data.assistantPhone is string && data.assistantPhone.size() > 0 && data.assistantPhone.size() < 20;
+    }
+
+    function isValidAppointment(data) {
+      return data.uid == request.auth.uid &&
+             data.doctorName is string && data.doctorName.size() > 0 &&
+             data.patientName is string && data.patientName.size() > 0 &&
+             data.status in ['pending', 'confirmed'] &&
+             data.createdAt is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                      hasRequiredFields(['uid', 'email', 'role']) && 
+                      request.resource.data.role == 'user';
+      allow update: if isAdmin();
+    }
+
+    match /specialists/{specialistId} {
+      allow read: if true; // Publicly readable
+      allow write: if isAdmin() && isValidSpecialist(request.resource.data);
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+                      isValidAppointment(request.resource.data) &&
+                      request.resource.data.uid == request.auth.uid;
+      allow update: if isAuthenticated() && 
+                      (resource.data.uid == request.auth.uid || isAdmin()) &&
+                      isValidAppointment(request.resource.data) &&
+                      request.resource.data.uid == resource.data.uid &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+  }
+}
