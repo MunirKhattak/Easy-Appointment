@@ -1230,10 +1230,10 @@ export default function App() {
             <Header />
             
             {/* Search Doctor Section */}
-            <div className="w-full max-w-2xl mb-12">
-              <div className="text-center mb-6">
+            <div className="w-full max-w-2xl mb-10 bg-white rounded-[40px] p-8 lg:p-10 shadow-2xl shadow-blue-900/5 border border-blue-50 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 to-[#0056b3]"></div>
+              <div className="text-center mb-8">
                 <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
-                <p className="text-slate-500 font-medium">Search for a specific doctor by name</p>
               </div>
               
               <div className="relative group">
@@ -1245,7 +1245,7 @@ export default function App() {
                   value={doctorSearchQuery}
                   onChange={(e) => setDoctorSearchQuery(e.target.value)}
                   placeholder="Doctor ka naam yahan likhen..."
-                  className="w-full pl-16 pr-6 py-5 bg-white rounded-3xl border-2 border-slate-100 focus:border-[#0070f3] outline-none shadow-xl shadow-blue-900/5 text-lg font-bold text-slate-800 transition-all"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-3xl border-2 border-transparent focus:border-[#0070f3] focus:bg-white outline-none shadow-sm text-lg font-bold text-slate-800 transition-all"
                 />
                 
                 {/* Search Results */}
@@ -1296,9 +1296,9 @@ export default function App() {
 
             <div className="w-full text-center mb-10">
               <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="h-0.5 bg-gradient-to-r from-transparent to-slate-200 flex-grow max-w-[150px]"></div>
-                <span className="text-slate-600 font-black uppercase tracking-[0.4em] text-lg bg-white px-6 py-2 rounded-2xl border border-slate-100 shadow-sm">Ya Phir</span>
-                <div className="h-0.5 bg-gradient-to-l from-transparent to-slate-200 flex-grow max-w-[150px]"></div>
+                <div className="h-0.5 bg-gradient-to-r from-transparent to-slate-200 flex-grow max-w-[100px]"></div>
+                <span className="text-slate-400 font-black uppercase tracking-[0.4em] text-sm bg-white px-6 py-2 rounded-2xl border border-slate-100 shadow-sm">Ya Phir</span>
+                <div className="h-0.5 bg-gradient-to-l from-transparent to-slate-200 flex-grow max-w-[100px]"></div>
               </div>
               <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
               <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
@@ -1317,7 +1317,6 @@ export default function App() {
                 <div className="bg-blue-50 p-2 rounded-xl">
                   <Stethoscope className="w-6 h-6 text-[#0056b3]" />
                 </div>
-                <span className="font-bold text-slate-700">Symptom Description</span>
               </div>
 
               <textarea
@@ -1340,7 +1339,7 @@ export default function App() {
                     </>
                   ) : (
                     <>
-                      Find Specialists
+                      Doctor Dhoonden
                       <ArrowRight className="w-6 h-6" />
                     </>
                   )}
