@@ -1055,12 +1055,12 @@ export default function App() {
       <div className="flex items-center gap-2">
         {user ? (
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col items-end">
+            <div className="flex flex-col items-end">
               <div className="flex items-center gap-2">
                 {userRole === "admin" && (
                   <span className="px-1.5 py-0.5 bg-blue-100 text-[#0056b3] text-[8px] font-black uppercase rounded-md tracking-tighter">Admin</span>
                 )}
-                <span className="text-xs font-bold text-[#003d7a]">{user.displayName || "User"}</span>
+                <span className="hidden xs:block text-xs font-bold text-[#003d7a]">{user.displayName?.split(' ')[0] || "User"}</span>
               </div>
               <div className="flex gap-2">
                 {userRole === "admin" && (
@@ -1068,14 +1068,14 @@ export default function App() {
                     onClick={() => setStep("admin")}
                     className="text-[10px] font-bold text-[#0056b3] hover:text-[#004494] uppercase tracking-wider underline decoration-2 underline-offset-2"
                   >
-                    Admin Panel
+                    Panel
                   </button>
                 )}
                 <button 
                   onClick={handleSignOut}
                   className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
                 >
-                  Sign Out
+                  Exit
                 </button>
               </div>
             </div>
