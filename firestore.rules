@@ -49,8 +49,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-        (request.auth.token.email == "munirkhattak.pk@gmail.com" && request.auth.token.email_verified == true)
+        (request.auth.token.email == "munirkhattak.pk@gmail.com") ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
     }
 
@@ -86,8 +87,10 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId) && 
                       hasRequiredFields(['uid', 'email', 'role']) && 
-                      request.resource.data.role == 'user';
-      allow update: if isAdmin();
+                      (request.resource.data.role == 'user' || (request.resource.data.role == 'admin' && request.auth.token.email == "munirkhattak.pk@gmail.com"));
+      allow update: if isOwner(userId) && 
+                      (request.resource.data.role == resource.data.role || (request.resource.data.role == 'admin' && request.auth.token.email == "munirkhattak.pk@gmail.com")) ||
+                      isAdmin();
     }
 
     match /specialists/{specialistId} {

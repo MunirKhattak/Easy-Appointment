@@ -364,23 +364,36 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        // Check if it's the admin email
+        const isAdminEmail = currentUser.email === "munirkhattak.pk@gmail.com";
+        
         // Check user role in Firestore
         try {
           const userDoc = await getDoc(doc(db, "users", currentUser.uid));
           if (userDoc.exists()) {
-            setUserRole(userDoc.data().role || "user");
+            const role = userDoc.data().role || "user";
+            // If it's the admin email but role isn't admin, update it
+            if (isAdminEmail && role !== "admin") {
+              await setDoc(doc(db, "users", currentUser.uid), { role: "admin" }, { merge: true });
+              setUserRole("admin");
+            } else {
+              setUserRole(role);
+            }
           } else {
             // Create user profile if it doesn't exist
+            const role = isAdminEmail ? "admin" : "user";
             const newUser = {
               uid: currentUser.uid,
               email: currentUser.email,
-              role: "user"
+              role: role
             };
             await setDoc(doc(db, "users", currentUser.uid), newUser);
-            setUserRole("user");
+            setUserRole(role);
           }
         } catch (error) {
           console.error("Error checking user role:", error);
+          // Fallback to email check if Firestore fails
+          if (isAdminEmail) setUserRole("admin");
         }
       } else {
         setUserRole("user");
@@ -581,8 +594,9 @@ export default function App() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing in with Google:", error);
+      alert("Sign in failed: " + (error.message || "Unknown error"));
     }
   };
 
@@ -641,8 +655,8 @@ export default function App() {
   };
 
   const handleSaveDoc = async () => {
-    if (!adminForm.name || !adminForm.type || !adminForm.city) {
-      alert("Please fill in all required fields (Name, Type, City).");
+    if (!adminForm.name || !adminForm.type || !adminForm.city || !adminForm.location || !adminForm.assistantPhone) {
+      alert("Please fill in all required fields (Name, Type, City, Location, Assistant Phone).");
       return;
     }
 
@@ -653,14 +667,19 @@ export default function App() {
       } else {
         const id = Date.now().toString();
         const newDoc: Specialist = {
-          ...adminForm,
           id,
+          name: adminForm.name,
+          type: adminForm.type,
+          city: adminForm.city as any,
+          location: adminForm.location,
+          assistantPhone: adminForm.assistantPhone,
+          experience: adminForm.experience || "Not Specified",
           rating: adminForm.rating || 4.5,
+          bio: adminForm.bio || "",
           availability: adminForm.availability || ["Mon", "Wed", "Fri"],
           timing: adminForm.timing || "09:00 AM - 05:00 PM",
-          assistantPhone: adminForm.assistantPhone || "923001234567",
           image: adminForm.image || `https://picsum.photos/seed/${Date.now()}/400/400`,
-        } as Specialist;
+        };
         await setDoc(doc(db, "specialists", id), newDoc);
       }
       setEditingDoc(null);
@@ -1006,13 +1025,28 @@ export default function App() {
         {user ? (
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-bold text-[#003d7a]">{user.displayName || "User"}</span>
-              <button 
-                onClick={handleSignOut}
-                className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
-              >
-                Sign Out
-              </button>
+              <div className="flex items-center gap-2">
+                {userRole === "admin" && (
+                  <span className="px-1.5 py-0.5 bg-blue-100 text-[#0056b3] text-[8px] font-black uppercase rounded-md tracking-tighter">Admin</span>
+                )}
+                <span className="text-xs font-bold text-[#003d7a]">{user.displayName || "User"}</span>
+              </div>
+              <div className="flex gap-2">
+                {userRole === "admin" && (
+                  <button 
+                    onClick={() => setStep("admin")}
+                    className="text-[10px] font-bold text-[#0056b3] hover:text-[#004494] uppercase tracking-wider underline decoration-2 underline-offset-2"
+                  >
+                    Admin Panel
+                  </button>
+                )}
+                <button 
+                  onClick={handleSignOut}
+                  className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
             <button 
               onClick={() => userRole === "admin" && setStep("admin")}
@@ -1713,6 +1747,16 @@ export default function App() {
           <span className="text-sm font-black text-[#0056b3] mt-0.5">Munir Khattak</span>
           <span className="text-[9px] font-medium text-slate-400 mt-1">All Rights Reserved ®</span>
         </div>
+        
+        {/* Visible Admin Login for the user */}
+        {!user && (
+          <button 
+            onClick={() => setShowAdminLogin(true)}
+            className="mt-4 text-[10px] font-bold text-slate-300 hover:text-slate-400 uppercase tracking-widest transition-colors"
+          >
+            Admin Access
+          </button>
+        )}
       </footer>
 
       {/* Hidden Admin Trigger */}
