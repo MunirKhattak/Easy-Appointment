@@ -1247,8 +1247,8 @@ export default function App() {
             <Header />
             
             {/* Search Doctor Section */}
-            <div className="w-full max-w-2xl mb-12 bg-blue-50/40 rounded-[40px] p-8 lg:p-10 shadow-xl shadow-blue-900/5 border-2 border-blue-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-400"></div>
+            <div className="w-full max-w-2xl mb-12 bg-blue-50/40 rounded-[40px] p-8 lg:p-10 shadow-xl shadow-blue-900/5 border-2 border-blue-100 relative">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-400 rounded-t-[40px]"></div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl lg:text-3xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
                 <div className="w-20 h-1 bg-blue-200 mx-auto rounded-full"></div>
@@ -1273,11 +1273,24 @@ export default function App() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 w-full mt-2 bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden z-50 max-h-64 overflow-y-auto"
+                      className="absolute top-full left-0 w-full mt-3 bg-white rounded-[32px] shadow-2xl border-2 border-blue-100 overflow-hidden z-50 max-h-80 overflow-y-auto"
                     >
                       {specialists
-                        .filter(s => s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()))
-                        .map(doc => (
+                        .filter(s => 
+                          s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()) ||
+                          s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
+                        )
+                        .length === 0 ? (
+                        <div className="p-8 text-center text-slate-400 font-medium">
+                          Koi doctor nahi mila
+                        </div>
+                      ) : (
+                        specialists
+                          .filter(s => 
+                            s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()) ||
+                            s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
+                          )
+                          .map(doc => (
                           <button
                             key={doc.id}
                             onClick={() => {
@@ -1300,12 +1313,8 @@ export default function App() {
                             </div>
                             <ArrowRight className="w-4 h-4 text-slate-300" />
                           </button>
-                        ))}
-                      {specialists.filter(s => s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase())).length === 0 && (
-                        <div className="p-6 text-center text-slate-400 font-medium">
-                          Koi doctor nahi mila
-                        </div>
-                      )}
+                        ))
+                      }
                     </motion.div>
                   )}
                 </AnimatePresence>
