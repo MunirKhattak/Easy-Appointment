@@ -1291,29 +1291,29 @@ export default function App() {
                             s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
                           )
                           .map(doc => (
-                          <button
-                            key={doc.id}
-                            onClick={() => {
-                              setSelectedSpecialist(doc);
-                              setStep("profile");
-                              setDoctorSearchQuery("");
-                            }}
-                            className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
-                          >
-                            <div className="flex items-center gap-3">
-                              <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
-                              <div className="text-left">
-                                <p className="font-bold text-slate-900">{doc.name}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                  <span>{doc.type}</span>
-                                  <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                  <span className="text-[#0056b3]">{doc.city}</span>
-                                </p>
+                            <button
+                              key={doc.id}
+                              onClick={() => {
+                                setSelectedSpecialist(doc);
+                                setStep("profile");
+                                setDoctorSearchQuery("");
+                              }}
+                              className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+                                <div className="text-left">
+                                  <p className="font-bold text-slate-900">{doc.name}</p>
+                                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>{doc.type}</span>
+                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                    <span className="text-[#0056b3]">{doc.city}</span>
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-slate-300" />
-                          </button>
-                        ))
+                              <ArrowRight className="w-4 h-4 text-slate-300" />
+                            </button>
+                          ))
                       )}
                     </motion.div>
                   )}
