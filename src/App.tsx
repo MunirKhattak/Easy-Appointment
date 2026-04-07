@@ -1061,91 +1061,118 @@ export default function App() {
 
   // --- Components ---
 
-  const Header = ({ showBack = true }) => (
-    <header className="w-full max-w-4xl flex items-center justify-between mb-8 lg:mb-12">
-      <div className="flex items-center gap-3">
-        {showBack && (
-          <button 
-            onClick={() => {
-              if (step === "profile") setStep("specialists");
-              else if (step === "specialists") setStep("locationSelection");
-              else if (step === "locationSelection") setStep("symptoms");
-              else if (step === "admin") setStep("home");
-              else setStep("home");
-            }}
-            className="p-2 hover:bg-blue-50 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-[#0056b3]" />
-          </button>
-        )}
-        <button 
-          onClick={() => setStep("home")}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
-        >
-          <div className="bg-white p-1 rounded-xl shadow-lg shadow-blue-100 border border-blue-50">
-            <img 
-              src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" 
-              alt="Logo" 
-              className="w-8 h-8 object-contain"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <h1 className="text-xl font-black tracking-tight text-[#003d7a]">Easy Appointment</h1>
-        </button>
-      </div>
+  const getStepStyles = () => {
+    switch (step) {
+      case "home": return "bg-sky-50/30";
+      case "symptoms": return "bg-indigo-50/30";
+      case "locationSelection": return "bg-amber-50/30";
+      case "specialists": return "bg-rose-50/30";
+      case "profile": return "bg-violet-50/30";
+      case "admin": return "bg-slate-50/30";
+      default: return "bg-[#f8fbff]";
+    }
+  };
 
-      <div className="flex items-center gap-2">
-        {user ? (
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end">
-              <span className="hidden xs:block text-xs font-bold text-[#003d7a]">{user.displayName?.split(' ')[0] || "User"}</span>
-              <button 
-                onClick={handleSignOut}
-                className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
-              >
-                Exit
-              </button>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <button 
-                onClick={() => userRole === "admin" && setStep("admin")}
-                className="w-10 h-10 rounded-full border-2 border-blue-100 p-0.5 hover:border-blue-300 transition-all overflow-hidden"
-              >
-                <img 
-                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || "User"}&background=0056b3&color=fff`} 
-                  alt="User" 
-                  className="w-full h-full rounded-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </button>
-              {userRole === "admin" && (
-                <span className="px-1.5 py-0.5 bg-blue-100 text-[#0056b3] text-[7px] font-black uppercase rounded-md tracking-tighter leading-none">Admin</span>
-              )}
-            </div>
-          </div>
-        ) : (
+  const Header = ({ showBack = true }) => {
+    const getHeaderColors = () => {
+      switch (step) {
+        case "home": return { text: "text-sky-900", bg: "bg-sky-50", border: "border-sky-100", hover: "hover:bg-sky-100" };
+        case "symptoms": return { text: "text-indigo-900", bg: "bg-indigo-50", border: "border-indigo-100", hover: "hover:bg-indigo-100" };
+        case "locationSelection": return { text: "text-amber-900", bg: "bg-amber-50", border: "border-amber-100", hover: "hover:bg-amber-100" };
+        case "specialists": return { text: "text-rose-900", bg: "bg-rose-50", border: "border-rose-100", hover: "hover:bg-rose-100" };
+        case "profile": return { text: "text-violet-900", bg: "bg-violet-50", border: "border-violet-100", hover: "hover:bg-violet-100" };
+        case "admin": return { text: "text-slate-900", bg: "bg-slate-50", border: "border-slate-100", hover: "hover:bg-slate-100" };
+        default: return { text: "text-[#003d7a]", bg: "bg-blue-50", border: "border-blue-50", hover: "hover:bg-blue-50" };
+      }
+    };
+    const colors = getHeaderColors();
+
+    return (
+      <header className="w-full max-w-4xl flex items-center justify-between mb-8 lg:mb-12">
+        <div className="flex items-center gap-3">
+          {showBack && (
+            <button 
+              onClick={() => {
+                if (step === "profile") setStep("specialists");
+                else if (step === "specialists") setStep("locationSelection");
+                else if (step === "locationSelection") setStep("symptoms");
+                else if (step === "admin") setStep("home");
+                else setStep("home");
+              }}
+              className={`p-2 ${colors.hover} rounded-full transition-colors`}
+            >
+              <ArrowLeft className={`w-6 h-6 ${colors.text.replace('900', '600')}`} />
+            </button>
+          )}
           <button 
-            onClick={handleGoogleSignIn}
-            disabled={isSigningIn}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-blue-100 rounded-xl shadow-sm hover:shadow-md transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setStep("home")}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
           >
-            {isSigningIn ? (
-              <Loader2 className="w-4 h-4 text-[#0056b3] animate-spin" />
-            ) : (
-              <User className="w-4 h-4 text-[#0056b3] group-hover:scale-110 transition-transform" />
-            )}
-            <span className="text-sm font-bold text-[#003d7a]">
-              {isSigningIn ? "Signing In..." : "Sign In"}
-            </span>
+            <div className={`bg-white p-1 rounded-xl shadow-lg shadow-blue-100 border ${colors.border}`}>
+              <img 
+                src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" 
+                alt="Logo" 
+                className="w-8 h-8 object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <h1 className={`text-xl font-black tracking-tight ${colors.text}`}>Easy Appointment</h1>
           </button>
-        )}
-      </div>
-    </header>
-  );
+        </div>
+
+        <div className="flex items-center gap-2">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <span className={`hidden xs:block text-xs font-bold ${colors.text}`}>{user.displayName?.split(' ')[0] || "User"}</span>
+                <button 
+                  onClick={handleSignOut}
+                  className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider"
+                >
+                  Exit
+                </button>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <button 
+                  onClick={() => userRole === "admin" && setStep("admin")}
+                  className={`w-10 h-10 rounded-full border-2 ${colors.border} p-0.5 hover:border-blue-300 transition-all overflow-hidden`}
+                >
+                  <img 
+                    src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || "User"}&background=0056b3&color=fff`} 
+                    alt="User" 
+                    className="w-full h-full rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </button>
+                {userRole === "admin" && (
+                  <span className={`px-1.5 py-0.5 ${colors.bg} ${colors.text.replace('900', '600')} text-[7px] font-black uppercase rounded-md tracking-tighter leading-none`}>Admin</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={handleGoogleSignIn}
+              disabled={isSigningIn}
+              className={`flex items-center gap-2 px-4 py-2 bg-white border ${colors.border} rounded-xl shadow-sm hover:shadow-md transition-all group disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isSigningIn ? (
+                <Loader2 className={`w-4 h-4 ${colors.text.replace('900', '600')} animate-spin`} />
+              ) : (
+                <User className={`w-4 h-4 ${colors.text.replace('900', '600')} group-hover:scale-110 transition-transform`} />
+              )}
+              <span className={`text-sm font-bold ${colors.text}`}>
+                {isSigningIn ? "Signing In..." : "Sign In"}
+              </span>
+            </button>
+          )}
+        </div>
+      </header>
+    );
+  };
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[#f8fbff] flex flex-col items-center px-6 py-8 font-sans text-[#003d7a]">
+      <div className={`min-h-screen ${getStepStyles()} flex flex-col items-center px-6 py-8 font-sans transition-colors duration-700`}>
       {/* Floating Install Button */}
       {showInstallButton && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1192,24 +1219,24 @@ export default function App() {
           >
             <Header showBack={false} />
             <main className="w-full max-w-2xl lg:max-w-5xl flex flex-col items-center text-center flex-grow justify-center py-12">
-              <span className="bg-[#e0ebff] text-[#0056b3] text-xs lg:text-sm font-bold px-6 py-2.5 rounded-full tracking-wider mb-6 uppercase">
+              <span className="bg-sky-100 text-sky-700 text-xs lg:text-sm font-bold px-6 py-2.5 rounded-full tracking-wider mb-6 uppercase">
                 For the people of
               </span>
-              <div className="bg-[#cce4ff] px-16 py-5 rounded-3xl mb-10 shadow-inner">
-                <h2 className="text-4xl lg:text-5xl font-black tracking-[0.2em]">KARAK</h2>
+              <div className="bg-sky-200/50 px-16 py-5 rounded-3xl mb-10 shadow-inner">
+                <h2 className="text-4xl lg:text-5xl font-black tracking-[0.2em] text-sky-900">KARAK</h2>
               </div>
               <h3 className="text-[52px] lg:text-[80px] leading-[1.05] font-extrabold mb-12 tracking-tight">
-                <span className="text-[#0070f3]">Easy</span><br />
-                <span>Appointment</span>
+                <span className="text-sky-600">Easy</span><br />
+                <span className="text-sky-900">Appointment</span>
               </h3>
-              <div className="bg-white border border-slate-100 rounded-[40px] p-10 shadow-xl shadow-blue-900/5 mb-16 max-w-3xl">
-                <p className="text-xl lg:text-2xl font-bold leading-relaxed text-[#334155]">
+              <div className="bg-white border border-sky-100 rounded-[40px] p-10 shadow-xl shadow-sky-900/5 mb-16 max-w-3xl">
+                <p className="text-xl lg:text-2xl font-bold leading-relaxed text-sky-800">
                   Karak k logo k lye Pehli Dafa - Ab Karak , Peshawar , Islamabad aur Kahi bhi - Ab Kesi bhi Doctor k sath Appointment - Sirf Aik Click Per
                 </p>
               </div>
               <button 
                 onClick={() => setStep("symptoms")}
-                className="w-full max-w-md lg:max-w-lg bg-[#0056b3] hover:bg-[#004494] text-white py-7 px-10 rounded-[24px] flex items-center justify-between group transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-blue-400/30 mb-6"
+                className="w-full max-w-md lg:max-w-lg bg-sky-600 hover:bg-sky-700 text-white py-7 px-10 rounded-[24px] flex items-center justify-between group transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-sky-400/30 mb-6"
               >
                 <span className="text-2xl font-bold flex-grow text-center pl-8">Book Your Appointment</span>
                 <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
@@ -1218,7 +1245,7 @@ export default function App() {
               {showInstallButton && (
                 <button 
                   onClick={handleInstallClick}
-                  className="flex items-center gap-2 text-[#0056b3] font-bold hover:opacity-80 transition-opacity"
+                  className="flex items-center gap-2 text-sky-600 font-bold hover:opacity-80 transition-opacity"
                 >
                   <Download className="w-5 h-5" />
                   <span>Install App for Faster Access</span>
@@ -1247,101 +1274,120 @@ export default function App() {
             <Header />
             
             {/* Search Doctor Section */}
-            <div className="w-full max-w-2xl mb-12 bg-blue-50/40 rounded-[40px] p-8 lg:p-10 shadow-xl shadow-blue-900/5 border-2 border-blue-100 relative">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-400 rounded-t-[40px]"></div>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl lg:text-3xl font-black text-[#003d7a] mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
-                <div className="w-20 h-1 bg-blue-200 mx-auto rounded-full"></div>
+            <div className="w-full max-w-2xl mb-12 relative">
+              {/* Clipped Background and Strip */}
+              <div className="absolute inset-0 bg-indigo-50/40 rounded-[40px] border-2 border-indigo-100 shadow-xl shadow-indigo-900/5 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-indigo-400"></div>
               </div>
-              
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                  <Search className="w-6 h-6 text-blue-400 group-focus-within:text-[#0070f3] transition-colors" />
+
+              <div className="relative p-8 lg:p-10">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl lg:text-3xl font-black text-indigo-900 mb-2">Apne Matlooba Doctor Ka Naam Lekhen</h2>
+                  <div className="w-20 h-1 bg-indigo-200 mx-auto rounded-full"></div>
                 </div>
-                <input 
-                  type="text"
-                  value={doctorSearchQuery}
-                  onChange={(e) => setDoctorSearchQuery(e.target.value)}
-                  placeholder="Doctor ka naam yahan likhen..."
-                  className="w-full pl-16 pr-6 py-5 bg-white rounded-3xl border-2 border-blue-50 focus:border-[#0070f3] outline-none shadow-sm text-lg font-bold text-slate-800 transition-all"
-                />
                 
-                {/* Search Results */}
-                <AnimatePresence>
-                  {doctorSearchQuery.trim() !== "" && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 w-full mt-3 bg-white rounded-[32px] shadow-2xl border-2 border-blue-100 overflow-hidden z-50 max-h-80 overflow-y-auto"
-                    >
-                      {specialists
-                        .filter(s => 
-                          s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()) ||
-                          s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
-                        )
-                        .length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 font-medium">
-                          Koi doctor nahi mila
-                        </div>
-                      ) : (
-                        specialists
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                    <Search className="w-6 h-6 text-indigo-400 group-focus-within:text-indigo-600 transition-colors" />
+                  </div>
+                  <input 
+                    id="doctor-search-input"
+                    type="text"
+                    value={doctorSearchQuery}
+                    onChange={(e) => setDoctorSearchQuery(e.target.value)}
+                    placeholder=" "
+                    className="peer w-full pl-16 pr-6 py-5 bg-white rounded-3xl border-2 border-indigo-50 focus:border-indigo-400 outline-none shadow-sm text-lg font-bold text-slate-800 transition-all"
+                  />
+                  <label 
+                    htmlFor="doctor-search-input"
+                    className="absolute left-16 top-1/2 -translate-y-1/2 text-slate-400 font-bold transition-all pointer-events-none
+                                peer-focus:-top-0 peer-focus:left-8 peer-focus:text-sm peer-focus:text-indigo-600 peer-focus:bg-white peer-focus:px-2 peer-focus:rounded-lg
+                                peer-[:not(:placeholder-shown)]:-top-0 peer-[:not(:placeholder-shown)]:left-8 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-indigo-600 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2 peer-[:not(:placeholder-shown)]:rounded-lg"
+                  >
+                    Doctor ka naam yahan likhen...
+                  </label>
+                  
+                  {/* Search Results */}
+                  <AnimatePresence>
+                    {doctorSearchQuery.trim() !== "" && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 w-full mt-3 bg-white rounded-[32px] shadow-2xl border-2 border-indigo-100 overflow-hidden z-50 max-h-80 overflow-y-auto"
+                      >
+                        {specialists
                           .filter(s => 
                             s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()) ||
                             s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
                           )
-                          .map(doc => (
-                            <button
-                              key={doc.id}
-                              onClick={() => {
-                                setSelectedSpecialist(doc);
-                                setStep("profile");
-                                setDoctorSearchQuery("");
-                              }}
-                              className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
-                            >
-                              <div className="flex items-center gap-3">
-                                <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
-                                <div className="text-left">
-                                  <p className="font-bold text-slate-900">{doc.name}</p>
-                                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>{doc.type}</span>
-                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                    <span className="text-[#0056b3]">{doc.city}</span>
-                                  </p>
+                          .length === 0 ? (
+                          <div className="p-8 text-center text-slate-400 font-medium">
+                            Koi doctor nahi mila
+                          </div>
+                        ) : (
+                          specialists
+                            .filter(s => 
+                              s.name.toLowerCase().includes(doctorSearchQuery.toLowerCase()) ||
+                              s.type.toLowerCase().includes(doctorSearchQuery.toLowerCase())
+                            )
+                            .map(doc => (
+                              <button
+                                key={doc.id}
+                                onClick={() => {
+                                  setSelectedSpecialist(doc);
+                                  setStep("profile");
+                                  setDoctorSearchQuery("");
+                                }}
+                                className="w-full p-4 flex items-center justify-between hover:bg-indigo-50 transition-colors border-b border-slate-50 last:border-0"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <img src={doc.image} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+                                  <div className="text-left">
+                                    <p className="font-bold text-slate-900">{doc.name}</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                      <span>{doc.type}</span>
+                                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                      <span className="text-indigo-600">{doc.city}</span>
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                              <ArrowRight className="w-4 h-4 text-slate-300" />
-                            </button>
-                          ))
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                                <ArrowRight className="w-4 h-4 text-slate-300" />
+                              </button>
+                            ))
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
             <div className="w-full text-center mb-12">
               <div className="flex items-center justify-center gap-6">
                 <div className="h-px bg-slate-200 flex-grow max-w-[80px]"></div>
-                <span className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs bg-slate-50 px-4 py-1.5 rounded-full border border-slate-200">Ya Phir</span>
+                <span className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs bg-indigo-50/50 px-4 py-1.5 rounded-full border border-slate-200">Ya Phir</span>
                 <div className="h-px bg-slate-200 flex-grow max-w-[80px]"></div>
               </div>
             </div>
 
-            <div className="w-full max-w-2xl bg-emerald-50/40 rounded-[40px] p-8 lg:p-12 shadow-xl shadow-emerald-900/5 border-2 border-emerald-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-400"></div>
-              
-              <div className="text-center mb-8">
-                <h2 className="text-2xl lg:text-3xl font-black text-[#003d7a] mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
-                <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
-                  <span className="whitespace-nowrap">Taakeh hamari</span>
-                  <span className="relative inline-flex items-center">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 font-black text-xl tracking-tight">AI</span>
-                  </span>
-                  <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
-                </p>
+            <div className="w-full max-w-2xl relative">
+              {/* Clipped Background and Strip */}
+              <div className="absolute inset-0 bg-emerald-50/40 rounded-[40px] border-2 border-emerald-100 shadow-xl shadow-emerald-900/5 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-emerald-400"></div>
               </div>
+              
+              <div className="relative p-8 lg:p-12">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl lg:text-3xl font-black text-emerald-900 mb-4">Neche Box me Apni Bemaari k baray me lekhen</h2>
+                  <p className="text-slate-500 font-medium flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 leading-relaxed">
+                    <span className="whitespace-nowrap">Taakeh hamari</span>
+                    <span className="relative inline-flex items-center">
+                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 font-black text-xl tracking-tight">AI</span>
+                    </span>
+                    <span className="whitespace-nowrap">apke lye mutaaliqa Doctor dhoonde</span>
+                  </p>
+                </div>
 
               <div className="flex items-center justify-center gap-3 mb-6">
                 <div className="bg-emerald-100 p-2 rounded-xl">
@@ -1392,7 +1438,8 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
         )}
 
         {step === "locationSelection" && (
@@ -1405,8 +1452,8 @@ export default function App() {
           >
             <Header />
             <div className="w-full text-center mb-12">
-              <h2 className="text-4xl lg:text-5xl font-black text-[#003d7a] mb-4">Kaha pe Check Up karwana hai?</h2>
-              <p className="text-slate-500 font-medium italic">Select your preferred city for the appointment.</p>
+              <h2 className="text-4xl lg:text-5xl font-black text-amber-900 mb-4">Kaha pe Check Up karwana hai?</h2>
+              <p className="text-amber-600 font-medium italic">Select your preferred city for the appointment.</p>
             </div>
 
             <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -1414,13 +1461,13 @@ export default function App() {
                 <button
                   key={city}
                   onClick={() => handleLocationSelect(city)}
-                  className="bg-white p-8 rounded-[32px] shadow-lg shadow-blue-900/5 border border-blue-50 hover:border-[#0070f3] hover:bg-blue-50 transition-all group text-left flex items-center justify-between"
+                  className="bg-white p-8 rounded-[32px] shadow-lg shadow-amber-900/5 border border-amber-100 hover:border-amber-400 hover:bg-amber-50 transition-all group text-left flex items-center justify-between"
                 >
                   <div>
-                    <h4 className="text-2xl font-black text-[#003d7a] group-hover:text-[#0070f3]">{city}</h4>
-                    <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mt-1">Available Clinics</p>
+                    <h4 className="text-2xl font-black text-amber-900 group-hover:text-amber-700">{city}</h4>
+                    <p className="text-amber-400 font-bold text-sm uppercase tracking-widest mt-1">Available Clinics</p>
                   </div>
-                  <div className="bg-white p-3 rounded-2xl shadow-sm group-hover:bg-[#0056b3] group-hover:text-white transition-all">
+                  <div className="bg-amber-50 p-3 rounded-2xl shadow-sm group-hover:bg-amber-600 group-hover:text-white transition-all">
                     <MapPin className="w-6 h-6" />
                   </div>
                 </button>
@@ -1439,8 +1486,8 @@ export default function App() {
           >
             <Header />
             <div className="w-full mb-10 text-center">
-              <h2 className="text-3xl lg:text-4xl font-black text-[#003d7a] mb-2">Recommended Specialists</h2>
-              <p className="text-slate-500 font-medium">Select a specialist to view their full profile and book an appointment.</p>
+              <h2 className="text-3xl lg:text-4xl font-black text-rose-900 mb-2">Recommended Specialists</h2>
+              <p className="text-rose-600 font-medium">Select a specialist to view their full profile and book an appointment.</p>
             </div>
 
             {/* Tab-style Specialist List */}
@@ -1453,7 +1500,7 @@ export default function App() {
                     setSelectedSpecialist(doc);
                     setStep("profile");
                   }}
-                  className="bg-white p-5 rounded-2xl shadow-md border-l-8 border-l-[#0056b3] border border-slate-100 flex items-center justify-between cursor-pointer group transition-all"
+                  className="bg-white p-5 rounded-2xl shadow-md border-l-8 border-l-rose-500 border border-rose-100 flex items-center justify-between cursor-pointer group transition-all hover:bg-rose-50/30"
                 >
                   <div className="flex items-center gap-5">
                     <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm">
@@ -1465,11 +1512,11 @@ export default function App() {
                       />
                     </div>
                     <div>
-                      <h4 className="text-xl font-black text-[#003d7a] group-hover:text-[#0070f3] transition-colors">{doc.name}</h4>
+                      <h4 className="text-xl font-black text-rose-900 group-hover:text-rose-700 transition-colors">{doc.name}</h4>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[#0070f3]">{doc.type}</span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-sm font-medium text-slate-500">{doc.experience} Exp</span>
+                        <span className="text-sm font-bold text-rose-500">{doc.type}</span>
+                        <span className="text-rose-200">•</span>
+                        <span className="text-sm font-medium text-rose-400">{doc.experience} Exp</span>
                       </div>
                     </div>
                   </div>
@@ -1477,12 +1524,12 @@ export default function App() {
                   <div className="flex items-center gap-4">
                     <div className="hidden sm:flex flex-col items-end">
                       <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <span className="font-bold text-[#003d7a]">{doc.rating}</span>
+                        <Star className="w-4 h-4 text-rose-400 fill-current" />
+                        <span className="font-bold text-rose-900">{doc.rating}</span>
                       </div>
-                      <span className="text-xs text-slate-400 font-bold uppercase">Rating</span>
+                      <span className="text-xs text-rose-300 font-bold uppercase">Rating</span>
                     </div>
-                    <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-[#0056b3] group-hover:text-white transition-all">
+                    <div className="bg-rose-50 p-3 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all">
                       <ArrowRight className="w-5 h-5" />
                     </div>
                   </div>
@@ -1509,8 +1556,8 @@ export default function App() {
           >
             <Header />
             
-            <div className="w-full bg-white rounded-[48px] overflow-hidden shadow-2xl shadow-blue-900/10 border border-blue-50">
-              <div className="h-48 bg-gradient-to-r from-[#0056b3] to-[#0070f3] relative">
+            <div className="w-full bg-white rounded-[48px] overflow-hidden shadow-2xl shadow-violet-900/10 border border-violet-100">
+              <div className="h-48 bg-gradient-to-r from-violet-600 to-fuchsia-600 relative">
                 <div className="absolute -bottom-16 left-12 p-2 bg-white rounded-[40px] shadow-xl">
                   <img 
                     src={selectedSpecialist.image} 
@@ -1524,17 +1571,17 @@ export default function App() {
               <div className="pt-20 px-12 pb-12">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                   <div>
-                    <span className="bg-blue-50 text-[#0056b3] px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest mb-3 inline-block">
+                    <span className="bg-violet-50 text-violet-700 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest mb-3 inline-block">
                       {selectedSpecialist.type}
                     </span>
-                    <h2 className="text-4xl font-black text-[#003d7a]">{selectedSpecialist.name}</h2>
+                    <h2 className="text-4xl font-black text-violet-900">{selectedSpecialist.name}</h2>
                     <div className="flex items-center gap-4 mt-3">
-                      <div className="flex items-center gap-1.5 text-slate-600 font-bold">
-                        <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                      <div className="flex items-center gap-1.5 text-violet-600 font-bold">
+                        <Star className="w-5 h-5 text-violet-400 fill-current" />
                         <span>{selectedSpecialist.rating} (120+ Reviews)</span>
                       </div>
-                      <div className="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
-                      <div className="text-slate-600 font-bold">{selectedSpecialist.experience} Experience</div>
+                      <div className="w-1.5 h-1.5 bg-violet-200 rounded-full"></div>
+                      <div className="text-violet-600 font-bold">{selectedSpecialist.experience} Experience</div>
                     </div>
                   </div>
                   
@@ -1545,7 +1592,7 @@ export default function App() {
                       setBookingName("");
                       setBookingPhone("");
                     }}
-                    className="bg-[#0056b3] hover:bg-[#004494] text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 transition-all flex items-center gap-3"
+                    className="bg-violet-600 hover:bg-violet-700 text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-xl shadow-violet-200 transition-all flex items-center gap-3"
                   >
                     <Calendar className="w-6 h-6" />
                     Book Now
@@ -1554,48 +1601,48 @@ export default function App() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                   <div className="lg:col-span-2">
-                    <h5 className="text-xl font-black text-[#003d7a] mb-4">About Specialist</h5>
-                    <p className="text-slate-600 text-lg leading-relaxed mb-8">
+                    <h5 className="text-xl font-black text-violet-900 mb-4">About Specialist</h5>
+                    <p className="text-violet-800/70 text-lg leading-relaxed mb-8">
                       {selectedSpecialist.bio}
                     </p>
 
                     {selectedSpecialist.aiSummary && (
-                      <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 mb-8">
+                      <div className="bg-violet-50/50 p-6 rounded-3xl border border-violet-100 mb-8">
                         <div className="flex items-center gap-2 mb-2">
-                          <Bot className="w-5 h-5 text-[#0056b3]" />
-                          <span className="font-black text-[#0056b3] text-sm uppercase tracking-wider">AI Intelligence Summary</span>
+                          <Bot className="w-5 h-5 text-violet-600" />
+                          <span className="font-black text-violet-600 text-sm uppercase tracking-wider">AI Intelligence Summary</span>
                         </div>
-                        <p className="text-slate-700 font-medium italic">
+                        <p className="text-violet-700 font-medium italic">
                           {selectedSpecialist.aiSummary}
                         </p>
                       </div>
                     )}
                     
-                    <h5 className="text-xl font-black text-[#003d7a] mb-4">Location</h5>
-                    <div className="flex items-start gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <h5 className="text-xl font-black text-violet-900 mb-4">Location</h5>
+                    <div className="flex items-start gap-4 bg-violet-50/30 p-6 rounded-3xl border border-violet-100">
                       <div className="bg-white p-3 rounded-2xl shadow-sm">
-                        <MapPin className="w-6 h-6 text-[#0056b3]" />
+                        <MapPin className="w-6 h-6 text-violet-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-[#003d7a] text-lg">{selectedSpecialist.location}</p>
+                        <p className="font-bold text-violet-900 text-lg">{selectedSpecialist.location}</p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-blue-50/50 p-8 rounded-[40px] border border-blue-100">
-                    <h5 className="text-xl font-black text-[#003d7a] mb-6">Availability</h5>
-                    <div className="mb-6 pb-6 border-b border-blue-100">
-                      <p className="text-sm font-bold text-slate-400 uppercase mb-2 tracking-wider">Timing</p>
-                      <p className="text-lg font-black text-[#0056b3]">{selectedSpecialist.timing || "09:00 AM - 05:00 PM"}</p>
+                  <div className="bg-violet-50/50 p-8 rounded-[40px] border border-violet-100">
+                    <h5 className="text-xl font-black text-violet-900 mb-6">Availability</h5>
+                    <div className="mb-6 pb-6 border-b border-violet-100">
+                      <p className="text-sm font-bold text-violet-400 uppercase mb-2 tracking-wider">Timing</p>
+                      <p className="text-lg font-black text-violet-700">{selectedSpecialist.timing || "09:00 AM - 05:00 PM"}</p>
                     </div>
                     <div className="space-y-4">
                       {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => (
                         <div key={day} className="flex items-center justify-between">
-                          <span className="font-bold text-slate-600">{day}</span>
+                          <span className="font-bold text-violet-600">{day}</span>
                           {selectedSpecialist.availability.includes(day) ? (
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase">Available</span>
+                            <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-xs font-black uppercase">Available</span>
                           ) : (
-                            <span className="text-slate-400 text-xs font-bold uppercase">Closed</span>
+                            <span className="text-violet-300 text-xs font-bold uppercase">Closed</span>
                           )}
                         </div>
                       ))}
@@ -1617,13 +1664,13 @@ export default function App() {
           >
             <Header />
             <div className="w-full flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-black text-[#003d7a]">Manage Specialists</h2>
+              <h2 className="text-3xl font-black text-slate-900">Manage Specialists</h2>
               <button 
                 onClick={() => {
                   setIsAddingDoc(true);
                   setAdminForm({});
                 }}
-                className="bg-[#0056b3] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-[#004494] transition-all"
+                className="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-900 transition-all shadow-lg shadow-slate-200"
               >
                 <Plus className="w-5 h-5" />
                 Add Specialist
@@ -1632,12 +1679,12 @@ export default function App() {
 
             <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {specialists.map(doc => (
-                <div key={doc.id} className="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 flex flex-col gap-4">
+                <div key={doc.id} className="bg-white p-6 rounded-3xl shadow-lg border border-slate-200 flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <img src={doc.image} alt={doc.name} className="w-16 h-16 rounded-2xl object-cover" referrerPolicy="no-referrer" />
                     <div>
-                      <h4 className="font-black text-[#003d7a]">{doc.name}</h4>
-                      <p className="text-sm font-bold text-[#0070f3]">{doc.type}</p>
+                      <h4 className="font-black text-slate-900">{doc.name}</h4>
+                      <p className="text-sm font-bold text-slate-500">{doc.type}</p>
                       <p className="text-xs text-slate-400 font-bold">{doc.city}</p>
                     </div>
                   </div>
@@ -1647,7 +1694,7 @@ export default function App() {
                         setEditingDoc(doc);
                         setAdminForm(doc);
                       }}
-                      className="p-2 bg-blue-50 text-[#0056b3] rounded-lg hover:bg-blue-100 transition-all"
+                      className="p-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
                     >
                       <Edit className="w-5 h-5" />
                     </button>
@@ -1671,7 +1718,7 @@ export default function App() {
                   className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                 >
                   <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="text-2xl font-black text-[#003d7a]">
+                    <h3 className="text-2xl font-black text-slate-900">
                       {editingDoc ? "Edit Specialist" : "Add New Specialist"}
                     </h3>
                     <button onClick={() => { setIsAddingDoc(false); setEditingDoc(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-all">
@@ -1708,7 +1755,7 @@ export default function App() {
                         />
                         <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className="px-6 py-2 bg-white border-2 border-blue-100 text-[#0056b3] rounded-xl font-bold text-sm hover:bg-blue-50 transition-all flex items-center gap-2 mx-auto"
+                          className="px-6 py-2 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-2 mx-auto"
                         >
                           <Upload className="w-4 h-4" />
                           Upload from Gallery
@@ -1724,7 +1771,7 @@ export default function App() {
                             type="text" 
                             value={adminForm.image || ""} 
                             onChange={e => setAdminForm(prev => ({ ...prev, image: e.target.value }))}
-                            className="w-full p-3 rounded-xl bg-white border border-slate-200 focus:border-[#0070f3] outline-none font-bold text-xs"
+                            className="w-full p-3 rounded-xl bg-white border border-slate-200 focus:border-slate-800 outline-none font-bold text-xs"
                             placeholder="Paste image link here..."
                           />
                         </div>
@@ -1739,7 +1786,7 @@ export default function App() {
                           type="text" 
                           value={adminForm.name || ""} 
                           onChange={e => setAdminForm(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                           placeholder="Dr. John Doe"
                         />
                       </div>
@@ -1749,7 +1796,7 @@ export default function App() {
                           type="text" 
                           value={adminForm.type || ""} 
                           onChange={e => setAdminForm(prev => ({ ...prev, type: e.target.value }))}
-                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                           placeholder="e.g. Dentist"
                         />
                       </div>
@@ -1758,7 +1805,7 @@ export default function App() {
                         <select 
                           value={adminForm.city || ""} 
                           onChange={e => setAdminForm(prev => ({ ...prev, city: e.target.value as any }))}
-                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                         >
                           <option value="">Select City</option>
                           <option value="Karak">Karak</option>
@@ -1773,7 +1820,7 @@ export default function App() {
                           type="text" 
                           value={adminForm.experience || ""} 
                           onChange={e => setAdminForm(prev => ({ ...prev, experience: e.target.value }))}
-                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                          className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                           placeholder="e.g. 10 Years"
                         />
                       </div>
@@ -1784,7 +1831,7 @@ export default function App() {
                         type="text" 
                         value={adminForm.location || ""} 
                         onChange={e => setAdminForm(prev => ({ ...prev, location: e.target.value }))}
-                        className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                        className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                         placeholder="e.g. Karak Medical Center"
                       />
                     </div>
@@ -1794,7 +1841,7 @@ export default function App() {
                         type="text" 
                         value={adminForm.assistantPhone || ""} 
                         onChange={e => setAdminForm(prev => ({ ...prev, assistantPhone: e.target.value }))}
-                        className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                        className="w-full p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                         placeholder="e.g. 923001234567"
                       />
                     </div>
@@ -1803,13 +1850,13 @@ export default function App() {
                       <textarea 
                         value={adminForm.bio || ""} 
                         onChange={e => setAdminForm(prev => ({ ...prev, bio: e.target.value }))}
-                        className="w-full h-32 p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-[#0070f3] outline-none font-bold resize-none"
+                        className="w-full h-32 p-4 rounded-xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none font-bold resize-none"
                         placeholder="Describe the specialist..."
                       />
                     </div>
 
                     <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border-2 border-slate-100">
-                      <h4 className="font-black text-[#003d7a] uppercase text-sm tracking-wider">Availability & Timing</h4>
+                      <h4 className="font-black text-slate-900 uppercase text-sm tracking-wider">Availability & Timing</h4>
                       
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-400 uppercase">Consultation Timing</label>
@@ -1817,7 +1864,7 @@ export default function App() {
                           type="text" 
                           value={adminForm.timing || ""} 
                           onChange={e => setAdminForm(prev => ({ ...prev, timing: e.target.value }))}
-                          className="w-full p-4 rounded-xl bg-white border-2 border-transparent focus:border-[#0070f3] outline-none font-bold"
+                          className="w-full p-4 rounded-xl bg-white border-2 border-transparent focus:border-slate-800 outline-none font-bold"
                           placeholder="e.g. 09:00 AM - 02:00 PM"
                         />
                       </div>
@@ -1839,7 +1886,7 @@ export default function App() {
                                 }}
                                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                                   isSelected 
-                                    ? "bg-[#0056b3] text-white shadow-md shadow-blue-100" 
+                                    ? "bg-slate-800 text-white shadow-md shadow-slate-100" 
                                     : "bg-white text-slate-400 border border-slate-200 hover:border-blue-200"
                                 }`}
                               >
@@ -1861,7 +1908,7 @@ export default function App() {
                     <button 
                       onClick={handleSaveDoc}
                       disabled={isSavingDoc}
-                      className="flex-1 py-4 bg-[#0056b3] text-white rounded-xl font-bold hover:bg-[#004494] transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isSavingDoc && <Loader2 className="w-5 h-5 animate-spin" />}
                       {isSavingDoc ? "Saving..." : "Save Specialist"}
@@ -1879,10 +1926,10 @@ export default function App() {
         <p className="text-xs font-bold tracking-[0.3em] text-slate-400 uppercase opacity-80">
           Only for the people of Karak
         </p>
-        <div className="flex flex-col items-center text-[#003d7a] leading-relaxed">
+        <div className="flex flex-col items-center text-slate-900 leading-relaxed">
           <span className="text-[11px] font-bold opacity-60">Designed and Developed</span>
           <span className="text-[9px] font-medium opacity-50 italic">by</span>
-          <span className="text-sm font-black text-[#0056b3] mt-0.5">Munir Khattak</span>
+          <span className="text-sm font-black text-slate-800 mt-0.5">Munir Khattak</span>
           <span className="text-[9px] font-medium text-slate-400 mt-1">All Rights Reserved ®</span>
         </div>
         
@@ -1914,10 +1961,10 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-md rounded-[40px] shadow-2xl p-10 flex flex-col items-center text-center"
             >
-              <div className="bg-blue-50 p-4 rounded-3xl mb-6">
-                <Bot className="w-10 h-10 text-[#0056b3]" />
+              <div className="bg-slate-50 p-4 rounded-3xl mb-6">
+                <Bot className="w-10 h-10 text-slate-800" />
               </div>
-              <h3 className="text-2xl font-black text-[#003d7a] mb-2">Admin Access</h3>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">Admin Access</h3>
               <p className="text-slate-500 font-medium mb-8">Please enter the admin password to continue.</p>
               
               <input 
@@ -1926,7 +1973,7 @@ export default function App() {
                 onChange={(e) => setAdminPassword(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleAdminLogin()}
                 placeholder="Enter Password"
-                className="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none text-center font-bold text-xl mb-6 transition-all"
+                className="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-slate-800 outline-none text-center font-bold text-xl mb-6 transition-all"
                 autoFocus
               />
 
@@ -1943,7 +1990,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={handleAdminLogin}
-                  className="flex-1 py-4 bg-[#0056b3] text-white rounded-2xl font-bold hover:bg-[#004494] transition-all shadow-lg shadow-blue-200"
+                  className="flex-1 py-4 bg-slate-800 text-white rounded-2xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-200"
                 >
                   Login
                 </button>
@@ -1963,7 +2010,7 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="bg-[#0056b3] p-8 text-white flex items-center justify-between">
+              <div className="bg-violet-600 p-8 text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Calendar className="w-6 h-6" />
                   <h3 className="text-xl font-black">Book Appointment</h3>
@@ -1986,7 +2033,7 @@ export default function App() {
                         value={bookingName}
                         onChange={(e) => setBookingName(e.target.value)}
                         placeholder="Enter your name"
-                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold transition-all"
+                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-violet-600 outline-none font-bold transition-all"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1996,7 +2043,7 @@ export default function App() {
                         value={bookingPhone}
                         onChange={(e) => setBookingPhone(e.target.value)}
                         placeholder="e.g. 0300 1234567"
-                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold transition-all"
+                        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-violet-600 outline-none font-bold transition-all"
                       />
                     </div>
                     <div className="space-y-2">
@@ -2008,8 +2055,8 @@ export default function App() {
                             onClick={() => setBookingDay(day)}
                             className={`py-3 rounded-xl text-xs font-black transition-all border-2 ${
                               bookingDay === day 
-                                ? "bg-[#0056b3] text-white border-[#0056b3] shadow-lg shadow-blue-100" 
-                                : "bg-slate-50 text-slate-400 border-transparent hover:border-blue-100"
+                                ? "bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-100" 
+                                : "bg-slate-50 text-slate-400 border-transparent hover:border-violet-100"
                             }`}
                           >
                             {day}
@@ -2020,15 +2067,15 @@ export default function App() {
                         <p className="text-[10px] text-red-400 font-bold mt-1">* Please select a day for your appointment</p>
                       )}
                     </div>
-                    <div className="bg-blue-50 p-4 rounded-2xl flex items-start gap-3">
-                      <MessageSquare className="w-5 h-5 text-[#0056b3] mt-0.5" />
-                      <p className="text-xs text-[#0056b3] font-bold leading-relaxed">
+                    <div className="bg-violet-50 p-4 rounded-2xl flex items-start gap-3">
+                      <MessageSquare className="w-5 h-5 text-violet-600 mt-0.5" />
+                      <p className="text-xs text-violet-600 font-bold leading-relaxed">
                         Booking request will be sent to the doctor's assistant via WhatsApp. They will reply with your booking number.
                       </p>
                     </div>
                     <button 
                       onClick={handleConfirmBooking}
-                      className="w-full py-5 bg-[#0056b3] text-white rounded-2xl font-black text-lg hover:bg-[#004494] transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3"
+                      className="w-full py-5 bg-violet-600 text-white rounded-2xl font-black text-lg hover:bg-violet-700 transition-all shadow-xl shadow-violet-100 flex items-center justify-center gap-3"
                     >
                       Send Request
                       <ArrowRight className="w-5 h-5" />
@@ -2040,7 +2087,7 @@ export default function App() {
                       <CheckCircle2 className="w-10 h-10 text-green-500" />
                     </div>
                     <div>
-                      <h4 className="text-2xl font-black text-[#003d7a] mb-2">Request Sent!</h4>
+                      <h4 className="text-2xl font-black text-violet-900 mb-2">Request Sent!</h4>
                       <p className="text-slate-500 font-medium px-4">
                         Aapki request assistant ko bhej di gayi hai. Jab wo aapko WhatsApp par Booking Number bhej den, to yahan enter karen.
                       </p>
@@ -2053,7 +2100,7 @@ export default function App() {
                         onChange={(e) => !isBookingFromUrl && setBookingNumber(e.target.value)}
                         readOnly={isBookingFromUrl}
                         placeholder="e.g. BK-1024"
-                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-violet-600 outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
                       />
                       {isBookingFromUrl && (
                         <p className="text-[10px] text-green-500 font-bold text-center">✓ Automatically loaded from link</p>
@@ -2105,13 +2152,13 @@ export default function App() {
                       <CheckCircle2 className="w-10 h-10 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-2xl font-black text-[#003d7a] mb-2">Appointment Confirmed!</h4>
+                      <h4 className="text-2xl font-black text-violet-900 mb-2">Appointment Confirmed!</h4>
                       <p className="text-slate-500 font-medium mb-4">
-                        Your appointment with <span className="text-[#0056b3] font-bold">{selectedSpecialist?.name}</span> is confirmed.
+                        Your appointment with <span className="text-violet-600 font-bold">{selectedSpecialist?.name}</span> is confirmed.
                       </p>
                       <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 inline-block">
                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Booking Number</p>
-                        <p className="text-3xl font-black text-[#003d7a] tracking-widest">{bookingNumber}</p>
+                        <p className="text-3xl font-black text-violet-900 tracking-widest">{bookingNumber}</p>
                       </div>
                     </div>
                     <button 
@@ -2129,7 +2176,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Background Decorative Elements */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-64 h-48 opacity-10 pointer-events-none -z-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_6px,#0056b3_6px,#0056b3_7px)]"></div>
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-64 h-48 opacity-10 pointer-events-none -z-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_6px,#6366f1_6px,#6366f1_7px)]"></div>
 
       {/* Floating Appointment Button */}
       <AnimatePresence>
@@ -2142,7 +2189,7 @@ export default function App() {
           >
             <button
               onClick={() => setShowAppointmentDetails(true)}
-              className="bg-[#0056b3] text-white w-28 h-28 rounded-full shadow-2xl flex flex-col items-center justify-center gap-1 hover:scale-105 transition-all active:scale-95 group border-4 border-white/20 relative"
+              className="bg-violet-600 text-white w-28 h-28 rounded-full shadow-2xl flex flex-col items-center justify-center gap-1 hover:scale-105 transition-all active:scale-95 group border-4 border-white/20 relative"
             >
               <Calendar className={`w-7 h-7 ${activeAppointment.status === "pending" ? "animate-pulse" : ""}`} />
               <div className="flex flex-col items-center">
@@ -2167,7 +2214,7 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="bg-[#003d7a] p-8 text-white flex items-center justify-between">
+              <div className="bg-violet-600 p-8 text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Calendar className="w-6 h-6" />
                   <h3 className="text-xl font-black">
@@ -2185,11 +2232,11 @@ export default function App() {
               <div className="p-8 space-y-6">
                 {activeAppointment.status === "pending" ? (
                   <div className="text-center space-y-6">
-                    <div className="bg-blue-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto">
-                      <MessageSquare className="w-10 h-10 text-[#0056b3]" />
+                    <div className="bg-violet-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto">
+                      <MessageSquare className="w-10 h-10 text-violet-600" />
                     </div>
                     <div>
-                      <h4 className="text-2xl font-black text-[#003d7a] mb-2">Enter Booking Number</h4>
+                      <h4 className="text-2xl font-black text-violet-900 mb-2">Enter Booking Number</h4>
                       <p className="text-slate-500 font-medium px-4">
                         Aapke WhatsApp par assistant ne jo Booking Number bheja hai, wo yahan enter karke confirm karen.
                       </p>
@@ -2202,7 +2249,7 @@ export default function App() {
                         onChange={(e) => !isBookingFromUrl && setBookingNumber(e.target.value)}
                         readOnly={isBookingFromUrl}
                         placeholder="e.g. BK-1024"
-                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-[#0056b3] outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full p-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-violet-600 outline-none font-bold text-center text-xl tracking-widest transition-all ${isBookingFromUrl ? 'opacity-70 cursor-not-allowed' : ''}`}
                       />
                       {isBookingFromUrl && (
                         <p className="text-[10px] text-green-500 font-bold text-center">✓ Automatically loaded from link</p>
@@ -2250,28 +2297,28 @@ export default function App() {
                   <>
                     <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
                       <div className="bg-white p-3 rounded-2xl shadow-sm">
-                        <Stethoscope className="w-6 h-6 text-[#0056b3]" />
+                        <Stethoscope className="w-6 h-6 text-violet-600" />
                       </div>
                       <div>
-                        <h4 className="font-black text-[#003d7a]">{activeAppointment.doctorName}</h4>
+                        <h4 className="font-black text-violet-900">{activeAppointment.doctorName}</h4>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{activeAppointment.doctorType}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-50">
+                      <div className="bg-violet-50/50 p-4 rounded-2xl border border-violet-50">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Day</p>
-                        <p className="font-black text-[#0056b3]">{activeAppointment.day}</p>
+                        <p className="font-black text-violet-600">{activeAppointment.day}</p>
                       </div>
-                      <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-50">
+                      <div className="bg-violet-50/50 p-4 rounded-2xl border border-violet-50">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Timing</p>
-                        <p className="font-black text-[#0056b3]">{activeAppointment.timing}</p>
+                        <p className="font-black text-violet-600">{activeAppointment.timing}</p>
                       </div>
                     </div>
 
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Location</p>
-                      <p className="font-bold text-[#003d7a] text-sm">{activeAppointment.location}</p>
+                      <p className="font-bold text-violet-900 text-sm">{activeAppointment.location}</p>
                     </div>
 
                     <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100">
@@ -2281,13 +2328,13 @@ export default function App() {
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Booking ID</p>
-                        <p className="font-black text-[#003d7a] tracking-widest">{activeAppointment.bookingNumber}</p>
+                        <p className="font-black text-violet-900 tracking-widest">{activeAppointment.bookingNumber}</p>
                       </div>
                     </div>
 
                     <button 
                       onClick={() => setShowAppointmentDetails(false)}
-                      className="w-full py-5 bg-[#0056b3] text-white rounded-2xl font-black text-lg hover:bg-[#004494] transition-all shadow-xl shadow-blue-100"
+                      className="w-full py-5 bg-violet-600 text-white rounded-2xl font-black text-lg hover:bg-violet-700 transition-all shadow-xl shadow-violet-100"
                     >
                       Got it
                     </button>
@@ -2302,10 +2349,10 @@ export default function App() {
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-8 right-8 bg-[#0056b3] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all active:scale-95 z-40 group"
+        className="fixed bottom-8 right-8 bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all active:scale-95 z-40 group"
       >
         <Bot className="w-8 h-8" />
-        <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-[#0056b3] px-4 py-2 rounded-xl text-sm font-bold shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-blue-50">
+        <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-bold shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-indigo-50">
           Need help? Chat with AI
         </span>
       </button>
@@ -2317,10 +2364,10 @@ export default function App() {
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-8 right-8 w-[90vw] sm:w-[400px] h-[600px] bg-white rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] z-50 flex flex-col overflow-hidden border border-blue-50"
+            className="fixed bottom-8 right-8 w-[90vw] sm:w-[400px] h-[600px] bg-white rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] z-50 flex flex-col overflow-hidden border border-indigo-50"
           >
             {/* Chat Header */}
-            <div className="bg-[#0056b3] p-6 text-white flex items-center justify-between">
+            <div className="bg-indigo-600 p-6 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-xl">
                   <Bot className="w-6 h-6" />
@@ -2344,19 +2391,19 @@ export default function App() {
             {/* Chat Messages */}
             <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-slate-50/50">
               {activeAppointment && (
-                <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between mb-2">
+                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className="bg-white p-2 rounded-xl shadow-sm">
-                      <Calendar className="w-4 h-4 text-[#0056b3]" />
+                      <Calendar className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-[#0056b3] uppercase tracking-widest">Upcoming Appointment</p>
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Upcoming Appointment</p>
                       <p className="text-xs font-bold text-slate-700">{activeAppointment.doctorName} - {activeAppointment.day}</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => setShowAppointmentDetails(true)}
-                    className="text-[10px] font-black text-[#0056b3] uppercase hover:underline"
+                    className="text-[10px] font-black text-indigo-600 uppercase hover:underline"
                   >
                     Details
                   </button>
@@ -2364,10 +2411,10 @@ export default function App() {
               )}
               {chatMessages.length === 0 && (
                 <div className="text-center py-10">
-                  <div className="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Bot className="w-8 h-8 text-[#0056b3]" />
+                  <div className="bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Bot className="w-8 h-8 text-indigo-600" />
                   </div>
-                  <h5 className="font-bold text-[#003d7a] mb-2">How can I help you today?</h5>
+                  <h5 className="font-bold text-indigo-900 mb-2">How can I help you today?</h5>
                   <p className="text-sm text-slate-500 px-8">
                     {step === "symptoms" 
                       ? "Apni bemaari ke baaray mein bataen, main aapki madad kar sakta hoon." 
@@ -2382,8 +2429,8 @@ export default function App() {
                 >
                   <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed ${
                     msg.role === "user" 
-                      ? "bg-[#0056b3] text-white rounded-tr-none" 
-                      : "bg-white text-slate-700 shadow-sm border border-blue-50 rounded-tl-none"
+                      ? "bg-indigo-600 text-white rounded-tr-none" 
+                      : "bg-white text-slate-700 shadow-sm border border-indigo-50 rounded-tl-none"
                   }`}>
                     {msg.text}
                   </div>
@@ -2391,8 +2438,8 @@ export default function App() {
               ))}
               {isChatLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-blue-50">
-                    <Loader2 className="w-5 h-5 animate-spin text-[#0056b3]" />
+                  <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-indigo-50">
+                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
                   </div>
                 </div>
               )}
@@ -2401,7 +2448,7 @@ export default function App() {
 
             {/* Chat Input */}
             <div className="p-4 bg-white border-t border-slate-100">
-              <div className="flex items-center gap-2 bg-slate-50 rounded-2xl p-2 border border-slate-200 focus-within:border-[#0056b3] transition-colors">
+              <div className="flex items-center gap-2 bg-slate-50 rounded-2xl p-2 border border-slate-200 focus-within:border-indigo-600 transition-colors">
                 <input 
                   type="text"
                   value={userInput}
