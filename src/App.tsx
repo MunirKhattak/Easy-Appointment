@@ -1065,7 +1065,7 @@ export default function App() {
     switch (step) {
       case "home": return "bg-sky-50/30";
       case "symptoms": return "bg-indigo-50/30";
-      case "locationSelection": return "bg-amber-50/30";
+      case "locationSelection": return "bg-sky-50/30";
       case "specialists": return "bg-rose-50/30";
       case "profile": return "bg-violet-50/30";
       case "admin": return "bg-slate-50/30";
@@ -1078,7 +1078,7 @@ export default function App() {
       switch (step) {
         case "home": return { text: "text-sky-900", bg: "bg-sky-50", border: "border-sky-100", hover: "hover:bg-sky-100" };
         case "symptoms": return { text: "text-indigo-900", bg: "bg-indigo-50", border: "border-indigo-100", hover: "hover:bg-indigo-100" };
-        case "locationSelection": return { text: "text-amber-900", bg: "bg-amber-50", border: "border-amber-100", hover: "hover:bg-amber-100" };
+        case "locationSelection": return { text: "text-sky-900", bg: "bg-sky-50", border: "border-sky-100", hover: "hover:bg-sky-100" };
         case "specialists": return { text: "text-rose-900", bg: "bg-rose-50", border: "border-rose-100", hover: "hover:bg-rose-100" };
         case "profile": return { text: "text-violet-900", bg: "bg-violet-50", border: "border-violet-100", hover: "hover:bg-violet-100" };
         case "admin": return { text: "text-slate-900", bg: "bg-slate-50", border: "border-slate-100", hover: "hover:bg-slate-100" };
@@ -1452,8 +1452,8 @@ export default function App() {
           >
             <Header />
             <div className="w-full text-center mb-12">
-              <h2 className="text-4xl lg:text-5xl font-black text-amber-900 mb-4">Kaha pe Check Up karwana hai?</h2>
-              <p className="text-amber-600 font-medium italic">Select your preferred city for the appointment.</p>
+              <h2 className="text-4xl lg:text-5xl font-black text-sky-900 mb-4">Kaha pe Check Up karwana hai?</h2>
+              <p className="text-sky-600 font-medium italic">Select your preferred city for the appointment.</p>
             </div>
 
             <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -1461,13 +1461,13 @@ export default function App() {
                 <button
                   key={city}
                   onClick={() => handleLocationSelect(city)}
-                  className="bg-white p-8 rounded-[32px] shadow-lg shadow-amber-900/5 border border-amber-100 hover:border-amber-400 hover:bg-amber-50 transition-all group text-left flex items-center justify-between"
+                  className="bg-white p-8 rounded-[32px] shadow-lg shadow-sky-900/5 border border-sky-100 hover:border-sky-400 hover:bg-sky-50 transition-all group text-left flex items-center justify-between"
                 >
                   <div>
-                    <h4 className="text-2xl font-black text-amber-900 group-hover:text-amber-700">{city}</h4>
-                    <p className="text-amber-400 font-bold text-sm uppercase tracking-widest mt-1">Available Clinics</p>
+                    <h4 className="text-2xl font-black text-sky-900 group-hover:text-indigo-600 transition-colors">{city}</h4>
+                    <p className="text-indigo-400 font-bold text-sm uppercase tracking-widest mt-1">Available Clinics</p>
                   </div>
-                  <div className="bg-amber-50 p-3 rounded-2xl shadow-sm group-hover:bg-amber-600 group-hover:text-white transition-all">
+                  <div className="bg-sky-50 p-3 rounded-2xl shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
                     <MapPin className="w-6 h-6" />
                   </div>
                 </button>
@@ -2176,7 +2176,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Background Decorative Elements */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-64 h-48 opacity-10 pointer-events-none -z-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_6px,#6366f1_6px,#6366f1_7px)]"></div>
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-gradient-to-b from-transparent via-white/5 to-transparent opacity-50"></div>
 
       {/* Floating Appointment Button */}
       <AnimatePresence>
